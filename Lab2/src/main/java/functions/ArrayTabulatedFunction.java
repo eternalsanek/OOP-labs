@@ -118,29 +118,24 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     @Override
     public void insert(double x, double y){
         int index = indexOfX(x);
-        if (index != -1){
+        if (index != -1) {
             yValues[index] = y;
             return;
         }
-        if (count == xValues.length){
-            int newSize = count + (count / 2) + 1;
-            double[] newXValues = new double[newSize];
-            double[] newYValues = new double[newSize];
-            System.arraycopy(xValues, 0, newXValues, 0, count);
-            System.arraycopy(yValues, 0, newYValues, 0, count);
-            xValues = newXValues;
-            yValues = newYValues;
-        }
+        double[] newXValues = new double[count + 1];
+        double[] newYValues = new double[count + 1];
         int insertIndex = 0;
         while (insertIndex < count && xValues[insertIndex] < x) {
             insertIndex++;
         }
-        if (insertIndex < count){
-            System.arraycopy(xValues, insertIndex, xValues, insertIndex + 1, count - insertIndex);
-            System.arraycopy(yValues, insertIndex, yValues, insertIndex + 1, count - insertIndex);
-        }
-        xValues[insertIndex] = x;
-        yValues[insertIndex] = y;
+        System.arraycopy(xValues, 0, newXValues, 0, insertIndex);
+        System.arraycopy(yValues, 0, newYValues, 0, insertIndex);
+        newXValues[insertIndex] = x;
+        newYValues[insertIndex] = y;
+        System.arraycopy(xValues, insertIndex, newXValues, insertIndex + 1, count - insertIndex);
+        System.arraycopy(yValues, insertIndex, newYValues, insertIndex + 1, count - insertIndex);
+        xValues = newXValues;
+        yValues = newYValues;
         count++;
     }
 }
