@@ -92,4 +92,55 @@ public class ArrayTabulatedFunctionTest {
         assertEquals(0.0, arr.apply(-5.0), 1e-12);
         assertEquals(0.0, arr.apply(10.0), 1e-12);
     }
+
+    @Test
+    void testInsert() {
+        double[] arrX = {0.0, 1.0, 2.0};
+        double[] arrY = {0.0, 1.0, 4.0};
+        ArrayTabulatedFunction arr = new ArrayTabulatedFunction(arrX, arrY);
+
+        // Тест вставки в середину
+        arr.insert(1.5, 2.25);
+        assertEquals(4, arr.getCount());
+        assertEquals(1.5, arr.getX(2), 1e-12);
+        assertEquals(2.25, arr.getY(2), 1e-12);
+
+        // Тест вставки в начало
+        arr.insert(-1.0, 1.0);
+        assertEquals(5, arr.getCount());
+        assertEquals(-1.0, arr.getX(0), 1e-12);
+        assertEquals(1.0, arr.getY(0), 1e-12);
+
+        // Тест вставки в конец
+        arr.insert(3.0, 9.0);
+        assertEquals(6, arr.getCount());
+        assertEquals(3.0, arr.getX(5), 1e-12);
+        assertEquals(9.0, arr.getY(5), 1e-12);
+
+        // Тест замены существующего значения
+        arr.insert(1.5, 3.0);
+        assertEquals(6, arr.getCount()); // количество не должно измениться
+        assertEquals(1.5, arr.getX(3), 1e-12); // позиция не должна измениться
+        assertEquals(3.0, arr.getY(3), 1e-12); // значение должно обновиться
+    }
+
+    @Test
+    void testInsertWithCapacity() {
+        // Тестируем вставку, когда есть запас по емкости
+        double[] arrX = {0.0, 1.0};
+        double[] arrY = {0.0, 1.0};
+        ArrayTabulatedFunction arr = new ArrayTabulatedFunction(arrX, arrY);
+
+        // Вставляем несколько элементов для проверки работы с запасом емкости
+        arr.insert(0.5, 0.25);
+        arr.insert(1.5, 2.25);
+        arr.insert(2.0, 4.0);
+
+        assertEquals(5, arr.getCount());
+        assertEquals(0.0, arr.getX(0), 1e-12);
+        assertEquals(0.5, arr.getX(1), 1e-12);
+        assertEquals(1.0, arr.getX(2), 1e-12);
+        assertEquals(1.5, arr.getX(3), 1e-12);
+        assertEquals(2.0, arr.getX(4), 1e-12);
+    }
 }

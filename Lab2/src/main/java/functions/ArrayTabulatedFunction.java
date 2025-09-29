@@ -2,7 +2,7 @@ package functions;
 
 import java.util.Arrays;
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction {
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable {
 
     private double[] xValues;
     private double[] yValues;
