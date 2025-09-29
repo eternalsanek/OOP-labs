@@ -2,7 +2,7 @@ package functions;
 
 import java.util.Arrays;
 
-public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable {
+public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
 
     private double[] xValues;
     private double[] yValues;
@@ -137,5 +137,12 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         xValues = newXValues;
         yValues = newYValues;
         count++;
+    }
+
+    @Override
+    public void remove(int index) {
+        System.arraycopy(xValues, index + 1, xValues, index, count - index - 1);
+        System.arraycopy(yValues, index + 1, yValues, index, count - index - 1);
+        count--;
     }
 }
