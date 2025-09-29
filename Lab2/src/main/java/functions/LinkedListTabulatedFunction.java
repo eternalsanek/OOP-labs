@@ -1,6 +1,6 @@
 package functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable{
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable {
     private static class Node{
         public Node next;
         public Node prev;
@@ -166,5 +166,47 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
             }
         }
         count--;
+    }
+
+    @Override
+    public void insert(double x, double y) {
+        if (head == null) addNode(x, y);
+
+        int index = indexOfX(x);
+
+        if (index != -1) {
+            setY(index, y);
+            return;
+        }
+
+        if (x < head.xValue) {
+            Node newNode = new Node(x, y);
+            newNode.next = head;
+            newNode.prev = head.prev;
+            head.prev.next = newNode;
+            head.prev = newNode;
+            head = newNode; // переносим голову
+            count++;
+            return;
+        }
+
+        if (x > head.prev.xValue) {
+            Node newNode = new Node(x,y);
+            newNode.next = head;
+            newNode.prev = head.prev;
+            head.prev.next = newNode;
+            head.prev = newNode;
+            count++;
+            return;
+        }
+
+        int i = floorIndexOfX(x);
+        Node newNode = new Node(x, y);
+        Node mergeNode = getNode(i);
+        newNode.next = mergeNode.next;
+        newNode.prev = mergeNode;
+        mergeNode.next.prev = newNode;
+        mergeNode.next = newNode;
+        ++count;
     }
 }
