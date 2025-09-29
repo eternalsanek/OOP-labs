@@ -174,4 +174,20 @@ public class ArrayTabulatedFunctionTest {
         assertEquals(1.5, arr.getX(3), 1e-12);
         assertEquals(2.0, arr.getX(4), 1e-12);
     }
+
+    // Тестим метод remove
+    @Test
+    void testRemove() {
+        double[] x = {0.0, 1.0, 2.0};
+        double[] y = {0.0, 1.0, 4.0};
+        ArrayTabulatedFunction f = new ArrayTabulatedFunction(x, y);
+
+        f.remove(1);
+
+        assertEquals(2, f.getCount());
+        assertEquals(0.0, f.getX(0), 1e-12);
+        assertEquals(0.0, f.getY(0), 1e-12);
+        assertEquals(2.0, f.getX(1), 1e-12);
+        assertEquals(4.0, f.getY(1), 1e-12);
+    }
 }
