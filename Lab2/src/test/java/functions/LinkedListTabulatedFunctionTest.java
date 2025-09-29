@@ -329,4 +329,71 @@ class LinkedListTabulatedFunctionTest {
         assertThrows(IndexOutOfBoundsException.class, () -> list.remove(3));
         assertThrows(IndexOutOfBoundsException.class, () -> list.remove(10));
     }
+
+    // Тестим метод insert из LinkedListTabulatedFunction:
+    @Test
+    void test1() {
+        double[] x = {1.0, 2.0, 3.0};
+        double[] y = {1.0, 4.0, 9.0};
+        LinkedListTabulatedFunction list = new LinkedListTabulatedFunction(x, y);
+
+        list.insert(0.0, -1.0);
+
+        assertEquals(4, list.getCount());
+        assertEquals(0.0, list.getX(0), 1e-12);
+        assertEquals(-1.0, list.getY(0), 1e-12);
+    }
+
+    @Test
+    void test2() {
+        double[] x = {1.0, 2.0, 3.0};
+        double[] y = {1.0, 4.0, 9.0};
+        LinkedListTabulatedFunction list = new LinkedListTabulatedFunction(x, y);
+
+        list.insert(4.0, 16.0);
+
+        assertEquals(4, list.getCount());
+        assertEquals(4.0, list.getX(3), 1e-12);
+        assertEquals(16.0, list.getY(3), 1e-12);
+    }
+
+    @Test
+    void test3() {
+        double[] x = {1.0, 3.0, 5.0};
+        double[] y = {1.0, 9.0, 25.0};
+        LinkedListTabulatedFunction list = new LinkedListTabulatedFunction(x, y);
+
+        list.insert(4.0, 16.0); // вставка между 3 и 5
+
+        assertEquals(4, list.getCount());
+        assertEquals(4.0, list.getX(2), 1e-12);
+        assertEquals(16.0, list.getY(2), 1e-12);
+
+        // проверяем соседей
+        assertEquals(3.0, list.getX(1), 1e-12);
+        assertEquals(5.0, list.getX(3), 1e-12);
+    }
+
+    @Test
+    void test4() {
+        double[] x = {0.0, 1.0, 2.0};
+        double[] y = {0.0, 1.0, 4.0};
+        LinkedListTabulatedFunction list = new LinkedListTabulatedFunction(x, y);
+
+        list.insert(1.0, 10.0); // обновляем y для существующего x
+
+        assertEquals(3, list.getCount());
+        assertEquals(10.0, list.getY(1), 1e-12);
+    }
+
+    @Test
+    void test5() {
+        LinkedListTabulatedFunction list = new LinkedListTabulatedFunction(new double[]{}, new double[]{});
+
+        list.insert(2.0, 4.0);
+
+        assertEquals(1, list.getCount());
+        assertEquals(2.0, list.getX(0), 1e-12);
+        assertEquals(4.0, list.getY(0), 1e-12);
+    }
 }
