@@ -1,6 +1,6 @@
 package functions;
 
-public class LinkedListTabulatedFunction extends AbstractTabulatedFunction{
+public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable{
     private static class Node{
         public Node next;
         public Node prev;
@@ -148,5 +148,23 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction{
     @Override
     public int getCount(){
         return count;
+    }
+    @Override
+    public void remove(int index){
+        if (index < 0 || index >= count){
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + count);
+        }
+        Node nodeToRemove = getNode(index);
+        if (count == 1){
+            head = null;
+        }
+        else{
+            nodeToRemove.prev.next = nodeToRemove.next;
+            nodeToRemove.next.prev = nodeToRemove.prev;
+            if (nodeToRemove == head){
+                head = head.next;
+            }
+        }
+        count--;
     }
 }

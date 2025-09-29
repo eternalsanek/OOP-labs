@@ -258,4 +258,75 @@ class LinkedListTabulatedFunctionTest {
             new LinkedListTabulatedFunction(source, 0.0, 1.0, 0);
         });
     }
+    @Test
+    void testRemove() {
+        double[] xValues = {0.0, 1.0, 2.0, 3.0};
+        double[] yValues = {0.0, 1.0, 4.0, 9.0};
+        LinkedListTabulatedFunction list = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // Проверяем начальное состояние
+        assertEquals(4, list.getCount());
+        assertEquals(0.0, list.getX(0), 1e-12);
+        assertEquals(3.0, list.getX(3), 1e-12);
+
+        // Удаляем элемент из середины
+        list.remove(1);
+        assertEquals(3, list.getCount());
+        assertEquals(0.0, list.getX(0), 1e-12);
+        assertEquals(2.0, list.getX(1), 1e-12);
+        assertEquals(3.0, list.getX(2), 1e-12);
+        assertEquals(0.0, list.getY(0), 1e-12);
+        assertEquals(4.0, list.getY(1), 1e-12);
+        assertEquals(9.0, list.getY(2), 1e-12);
+
+        // Удаляем первый элемент
+        list.remove(0);
+        assertEquals(2, list.getCount());
+        assertEquals(2.0, list.getX(0), 1e-12);
+        assertEquals(3.0, list.getX(1), 1e-12);
+        assertEquals(2.0, list.leftBound(), 1e-12); // Проверяем левую границу
+
+        // Удаляем последний элемент
+        list.remove(1);
+        assertEquals(1, list.getCount());
+        assertEquals(2.0, list.getX(0), 1e-12);
+        assertEquals(4.0, list.getY(0), 1e-12);
+        assertEquals(2.0, list.leftBound(), 1e-12);
+        assertEquals(2.0, list.rightBound(), 1e-12);
+
+        // Удаляем единственный оставшийся элемент
+        list.remove(0);
+        assertEquals(0, list.getCount());
+    }
+
+    @Test
+    void testRemoveEdgeCases() {
+        double[] xValues = {0.0, 1.0};
+        double[] yValues = {0.0, 1.0};
+        LinkedListTabulatedFunction list = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // Удаляем первый элемент из двух
+        list.remove(0);
+        assertEquals(1, list.getCount());
+        assertEquals(1.0, list.getX(0), 1e-12);
+        assertEquals(1.0, list.getY(0), 1e-12);
+        assertEquals(1.0, list.leftBound(), 1e-12);
+        assertEquals(1.0, list.rightBound(), 1e-12);
+
+        // Проверяем, что после удаления корректно работает интерполяция
+        assertEquals(1.0, list.apply(1.5), 1e-12); // экстраполяция справа
+        assertEquals(1.0, list.apply(0.5), 1e-12); // экстраполяция слева
+    }
+
+    @Test
+    void testRemoveInvalidIndex() {
+        double[] xValues = {0.0, 1.0, 2.0};
+        double[] yValues = {0.0, 1.0, 4.0};
+        LinkedListTabulatedFunction list = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // Проверяем исключение при неверном индексе
+        assertThrows(IndexOutOfBoundsException.class, () -> list.remove(-1));
+        assertThrows(IndexOutOfBoundsException.class, () -> list.remove(3));
+        assertThrows(IndexOutOfBoundsException.class, () -> list.remove(10));
+    }
 }
