@@ -27,4 +27,59 @@ public class MethodAndThenTest {
         assertEquals(16.0, fun4.apply(2.0),  1e-12);
         assertEquals(81.0, fun4.apply(-3.0),  1e-12);
     }
+
+    // Тестим сложные функции из табулированных и обычных функций:
+    @Test
+    void test1() {
+        double[] x1 = {0.0, 1.0, 2.0};
+        double[] y1 = {0.0, 1.0, 4.0};
+        ArrayTabulatedFunction f1 = new ArrayTabulatedFunction(x1, y1);
+
+        double[] x2 = {0.0, 1.0, 2.0};
+        double[] y2 = {0.0, 2.0, 4.0};
+        ArrayTabulatedFunction f2 = new ArrayTabulatedFunction(x2, y2);
+
+        MathFunction composed = f1.andThen(f2);
+
+        assertEquals(0.0, composed.apply(0.0), 1e-12);
+        assertEquals(2.0, composed.apply(1.0), 1e-12);
+        assertEquals(8.0, composed.apply(2.0), 1e-12);
+        assertEquals(5.0, composed.apply(1.5), 1e-12); // проверка экстраполяции
+    }
+
+    @Test
+    void test2() {
+        double[] x1 = {0.0, 1.0, 2.0};
+        double[] y1 = {1.0, 2.0, 3.0};
+        ArrayTabulatedFunction f1 = new ArrayTabulatedFunction(x1, y1);
+
+        double[] x2 = {0.0, 2.0, 3.0};
+        double[] y2 = {0.0, 4.0, 9.0};
+        LinkedListTabulatedFunction f2 = new LinkedListTabulatedFunction(x2, y2);
+
+        MathFunction composed = f1.andThen(f2);
+
+        assertEquals(2.0, composed.apply(0.0), 1e-12);
+        assertEquals(4.0, composed.apply(1.0), 1e-12);
+        assertEquals(9.0, composed.apply(2.0), 1e-12);
+        assertEquals(3.0, composed.apply(0.5), 1e-12); // интерполяция
+    }
+
+    @Test
+    void test3() {
+        double[] x1 = {0.0, 1.0, 2.0};
+        double[] y1 = {0.0, 1.0, 2.0};
+        ArrayTabulatedFunction f1 = new ArrayTabulatedFunction(x1, y1);
+
+        // g(x) = x^2
+        MathFunction g = new SqrFunction();
+
+        MathFunction composed = f1.andThen(g);
+
+        assertEquals(0.0, composed.apply(0.0), 1e-12);
+        assertEquals(1.0, composed.apply(1.0), 1e-12);
+        assertEquals(4.0, composed.apply(2.0), 1e-12);
+        assertEquals(0.25, composed.apply(0.5), 1e-12); // интерполяция
+    }
+
 }
