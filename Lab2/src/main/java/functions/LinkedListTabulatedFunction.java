@@ -1,5 +1,7 @@
 package functions;
 
+import java.util.Iterator;
+
 public class LinkedListTabulatedFunction extends AbstractTabulatedFunction implements Removable, Insertable {
     private static class Node{
         public Node next;
@@ -214,5 +216,9 @@ public class LinkedListTabulatedFunction extends AbstractTabulatedFunction imple
         mergeNode.next.prev = newNode;
         mergeNode.next = newNode;
         ++count;
+    }
+    @Override
+    public Iterator<Point> iterator(){
+        throw new UnsupportedOperationException();
     }
 }

@@ -1,6 +1,7 @@
 package functions;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements Insertable, Removable {
 
@@ -153,5 +154,9 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         System.arraycopy(xValues, index + 1, xValues, index, count - index - 1);
         System.arraycopy(yValues, index + 1, yValues, index, count - index - 1);
         count--;
+    }
+    @Override
+    public Iterator<Point> iterator(){
+        throw new UnsupportedOperationException();
     }
 }
