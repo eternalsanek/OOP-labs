@@ -1,5 +1,8 @@
 package functions;
 
+import exceptions.DifferentLengthOfArraysException;
+import exceptions.ArrayIsNotSortedException;
+
 public abstract class AbstractTabulatedFunction implements TabulatedFunction {
 
     protected int count;
@@ -32,6 +35,18 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
                 int floorIndex = floorIndexOfX(x);
                 return interpolate(x, floorIndex);
             }
+        }
+    }
+
+    public static void checkLengthIsTheSame(double[] xValues, double[] yValues) {
+        if (xValues.length != yValues.length) throw new DifferentLengthOfArraysException("The lengths " +
+                "of the arrays are not the same");
+    }
+
+    public static void checkSorted(double[] xValues) {
+        for (int i = 0; i < xValues.length - 1; ++i) {
+            if (xValues[i] > xValues[i + 1]) throw new ArrayIsNotSortedException("The array " +
+                    "is not sorted in ascending order");
         }
     }
 }
