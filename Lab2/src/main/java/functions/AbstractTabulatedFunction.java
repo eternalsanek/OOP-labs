@@ -49,4 +49,15 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction {
                     "is not sorted in ascending order");
         }
     }
+    @Override
+    public String toString(){
+        String resultString;
+        StringBuilder line = new StringBuilder();
+        line.append(getClass().getSimpleName()).append(" size = ").append(getCount()).append("\n");
+        for(Point point : this){
+            line.append("[").append(point.x).append("; ").append(point.y).append("]\n");
+        }
+        resultString = line.toString();
+        return resultString;
+    }
 }
