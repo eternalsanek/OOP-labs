@@ -434,4 +434,130 @@ class LinkedListTabulatedFunctionTest {
         assertThrows(IllegalArgumentException.class, () -> function.getY(-1));
         assertThrows(IllegalArgumentException.class, () -> function.getY(2));
     }
+    @Test
+    void testIteratorWhileLoop() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        var iterator = function.iterator();
+        int index = 0;
+        while (iterator.hasNext()) {
+            Point point = iterator.next();
+            assertEquals(xValues[index], point.x, 1e-10);
+            assertEquals(yValues[index], point.y, 1e-10);
+            index++;
+        }
+        assertEquals(3, index); // Проверяем, что прошли по всем точкам
+    }
+
+    @Test
+    void testIteratorForEachLoop() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        int index = 0;
+        for (Point point : function) {
+            assertEquals(xValues[index], point.x, 1e-10);
+            assertEquals(yValues[index], point.y, 1e-10);
+            index++;
+        }
+        assertEquals(3, index); // Проверяем, что прошли по всем точкам
+    }
+
+    @Test
+    void testIteratorOnSingleElement() {
+        // Тест на функции с минимальным количеством точек (2 точки)
+        double[] xValues = {1.0, 2.0};
+        double[] yValues = {10.0, 20.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // Тестируем while цикл
+        var iterator = function.iterator();
+        int count = 0;
+        while (iterator.hasNext()) {
+            Point point = iterator.next();
+            assertEquals(xValues[count], point.x, 1e-10);
+            assertEquals(yValues[count], point.y, 1e-10);
+            count++;
+        }
+        assertEquals(2, count);
+
+        // Тестируем for-each цикл
+        count = 0;
+        for (Point point : function) {
+            assertEquals(xValues[count], point.x, 1e-10);
+            assertEquals(yValues[count], point.y, 1e-10);
+            count++;
+        }
+        assertEquals(2, count);
+    }
+
+    @Test
+    void testIteratorAfterModification() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // Модифицируем функцию
+        function.setY(1, 25.0);
+        function.insert(1.5, 15.0);
+
+        // Ожидаемые значения после модификации
+        double[] expectedX = {1.0, 1.5, 2.0, 3.0};
+        double[] expectedY = {10.0, 15.0, 25.0, 30.0};
+
+        // Проверяем итератором while
+        var iterator = function.iterator();
+        int index = 0;
+        while (iterator.hasNext()) {
+            Point point = iterator.next();
+            assertEquals(expectedX[index], point.x, 1e-10);
+            assertEquals(expectedY[index], point.y, 1e-10);
+            index++;
+        }
+        assertEquals(4, index);
+
+        // Проверяем for-each
+        index = 0;
+        for (Point point : function) {
+            assertEquals(expectedX[index], point.x, 1e-10);
+            assertEquals(expectedY[index], point.y, 1e-10);
+            index++;
+        }
+        assertEquals(4, index);
+    }
+
+    @Test
+    void testMultipleIterators() {
+        double[] xValues = {1.0, 2.0, 3.0};
+        double[] yValues = {10.0, 20.0, 30.0};
+        LinkedListTabulatedFunction function = new LinkedListTabulatedFunction(xValues, yValues);
+
+        // Создаем два независимых итератора
+        var iterator1 = function.iterator();
+        var iterator2 = function.iterator();
+
+        // Используем первый итератор
+        int count1 = 0;
+        while (iterator1.hasNext()) {
+            Point point = iterator1.next();
+            assertEquals(xValues[count1], point.x, 1e-10);
+            assertEquals(yValues[count1], point.y, 1e-10);
+            count1++;
+        }
+
+        // Используем второй итератор
+        int count2 = 0;
+        while (iterator2.hasNext()) {
+            Point point = iterator2.next();
+            assertEquals(xValues[count2], point.x, 1e-10);
+            assertEquals(yValues[count2], point.y, 1e-10);
+            count2++;
+        }
+
+        assertEquals(3, count1);
+        assertEquals(3, count2);
+    }
 }
