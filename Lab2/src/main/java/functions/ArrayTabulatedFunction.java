@@ -1,5 +1,7 @@
 package functions;
 
+import exceptions.InterpolationException;
+
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -12,6 +14,10 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         if (xValues.length < 2){
             throw new IllegalArgumentException("At least 2 points required");
         }
+
+        checkLengthIsTheSame(xValues, yValues);
+        checkSorted(xValues);
+
         this.xValues = Arrays.copyOf(xValues, xValues.length);
         this.yValues = Arrays.copyOf(yValues, yValues.length);
         this.count = xValues.length;
@@ -116,9 +122,14 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
     }
 
     public double interpolate(double x, int floorIndex) {
+        if (x < xValues[floorIndex] || x > xValues[floorIndex + 1]) {
+            throw new InterpolationException("X is outside the interpolation interval");
+        }
+
         return interpolate(x, xValues[floorIndex], xValues[floorIndex + 1],
                 yValues[floorIndex], yValues[floorIndex + 1]);
     }
+
     @Override
     public void insert(double x, double y){
         int insertIndex = 0;
@@ -155,6 +166,7 @@ public class ArrayTabulatedFunction extends AbstractTabulatedFunction implements
         System.arraycopy(yValues, index + 1, yValues, index, count - index - 1);
         count--;
     }
+
     @Override
     public Iterator<Point> iterator(){
         throw new UnsupportedOperationException();
