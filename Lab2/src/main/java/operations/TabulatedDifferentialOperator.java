@@ -29,7 +29,7 @@ public class TabulatedDifferentialOperator implements DifferentialOperator<Tabul
         }
         return factory.create(xValues, yValues);
     }
-    public void TabulatedDifferentialOperator(TabulatedFunctionFactory factory){
+    public TabulatedDifferentialOperator(TabulatedFunctionFactory factory){
         this.factory = factory;
     }
     public TabulatedDifferentialOperator(){
