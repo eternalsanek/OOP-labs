@@ -4,6 +4,9 @@ import exceptions.ArrayIsNotSortedException;
 import exceptions.DifferentLengthOfArraysException;
 import exceptions.InterpolationException;
 import org.junit.jupiter.api.Test;
+
+import java.util.Iterator;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ArrayTabulatedFunctionTest {
@@ -402,5 +405,37 @@ public class ArrayTabulatedFunctionTest {
 
         assertThrows(InterpolationException.class, () -> f.interpolate(5, 1));
         assertDoesNotThrow( () -> f.interpolate(2.5, 1));
+    }
+
+    @Test
+    public void testIteratorWithWhile() {
+        double[] xValues = {1, 2, 3, 4};
+        double[] yValues = {10, 20, 30, 40};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        Iterator<Point> iterator = function.iterator();
+        int i = 0;
+        while (iterator.hasNext()) {
+            Point point = iterator.next();
+            assertEquals(xValues[i], point.x, 1e-9);
+            assertEquals(yValues[i], point.y, 1e-9);
+            i++;
+        }
+        assertEquals(xValues.length, i);
+    }
+
+    @Test
+    public void testIteratorWithForEach() {
+        double[] xValues = {1, 2, 3, 4};
+        double[] yValues = {10, 20, 30, 40};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        int i = 0;
+        for (Point point : function) {
+            assertEquals(xValues[i], point.x, 1e-9);
+            assertEquals(yValues[i], point.y, 1e-9);
+            i++;
+        }
+        assertEquals(xValues.length, i);
     }
 }
