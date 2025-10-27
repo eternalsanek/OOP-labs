@@ -1,5 +1,8 @@
 package functions;
 
+import exceptions.ArrayIsNotSortedException;
+import exceptions.DifferentLengthOfArraysException;
+import exceptions.InterpolationException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -367,5 +370,37 @@ public class ArrayTabulatedFunctionTest {
         // Эти случаи будут обрабатываться в вызывающем коде, не в самом interpolate
         // Поэтому здесь нет исключений, но важно протестировать граничные значения
         assertEquals(7.0, arr.interpolate(3.0, 1)); // экстраполяция через interpolate
+    }
+
+    @Test
+    void constructorArrayTabulatedFunctionTest() {
+        double[] arrX1 = {4};
+        double[] arrY1 = {12, 78.5};
+        assertThrows(IllegalArgumentException.class,
+                () -> new ArrayTabulatedFunction(arrX1, arrY1));
+
+        double[] arrX2 = {45, 12, 89};
+        double[] arrY2 = {45, 12};
+        assertThrows(DifferentLengthOfArraysException.class,
+                () -> new ArrayTabulatedFunction(arrX2, arrY2));
+
+        double[] arrX3 = {45, 12, 89};
+        double[] arrY3 = {45, 12, 78};
+        assertThrows(ArrayIsNotSortedException.class,
+                () -> new ArrayTabulatedFunction(arrX3, arrY3));
+
+        double[] arrX4 = {45, 89, 100.5};
+        double[] arrY4 = {45, 12, 78};
+        assertDoesNotThrow(() -> new ArrayTabulatedFunction(arrX4, arrY4));
+    }
+
+    @Test
+    void interpolateArrayTabulatedFunctionTest() {
+        double[] arrX = {1, 2, 3};
+        double[] arrY = {1, 2, 3};
+        ArrayTabulatedFunction f = new ArrayTabulatedFunction(arrX, arrY);
+
+        assertThrows(InterpolationException.class, () -> f.interpolate(5, 1));
+        assertDoesNotThrow( () -> f.interpolate(2.5, 1));
     }
 }
