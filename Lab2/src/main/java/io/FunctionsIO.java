@@ -76,8 +76,8 @@ public final class FunctionsIO {
         double[] xValues = new double[count];
         double[] yValues = new double[count];
         for(int i = 0; i < count; i++){
-            double x = dis.readDouble();
-            double y = dis.readDouble();
+            xValues[i] = dis.readDouble();
+            yValues[i] = dis.readDouble();
         }
         return factory.create(xValues, yValues);
     }
