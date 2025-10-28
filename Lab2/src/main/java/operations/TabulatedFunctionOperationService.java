@@ -6,6 +6,7 @@ import functions.TabulatedFunction;
 import functions.factory.ArrayTabulatedFunctionFactory;
 import functions.factory.TabulatedFunctionFactory;
 
+import java.lang.management.GarbageCollectorMXBean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -74,6 +75,20 @@ public class TabulatedFunctionOperationService {
         return doOperation(F, G, new BiOperation() {
             @Override
             public double apply (double u, double v) { return u - v; }
+        });
+    }
+
+    public TabulatedFunction multiply(TabulatedFunction F, TabulatedFunction G){
+        return doOperation(F, G, new BiOperation() {
+            @Override
+            public double apply (double u, double v) { return u * v; }
+        });
+    }
+
+    public TabulatedFunction divide(TabulatedFunction F, TabulatedFunction G){
+        return doOperation(F, G, new BiOperation() {
+            @Override
+            public double apply (double u, double v) { return u / v; }
         });
     }
 }

@@ -128,13 +128,84 @@ class TabulatedDifferentialOperatorTest {
     }
 
     @Test
-    void testDeriveDivisionByZero() {
+    void testDeriveWithSmallStep() {
         TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
 
-        double[] xValues = {1.0, 1.0, 2.0}; // одинаковые x создадут dx = 0
+        // Используем небольшой шаг для проверки точности
+        double[] xValues = {1.0, 1.1, 2.0};
         double[] yValues = {1.0, 2.0, 3.0};
         TabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
-        assertThrows(ArithmeticException.class, () -> operator.derive(function));
+        TabulatedFunction derivative = operator.derive(function);
+
+        // Проверяем, что производная вычисляется корректно
+        assertEquals(3, derivative.getCount());
+
+        // Первая производная: (2.0 - 1.0) / (1.1 - 1.0) = 1.0 / 0.1 = 10.0
+        assertEquals(10.0, derivative.getY(0), 1e-12);
+
+        // Вторая производная: (3.0 - 2.0) / (2.0 - 1.1) = 1.0 / 0.9 ≈ 1.1111111111111112
+        assertEquals(1.0 / 0.9, derivative.getY(1), 1e-12);
+
+        // Последняя производная равна предпоследней
+        assertEquals(derivative.getY(1), derivative.getY(2), 1e-12);
+    }
+
+    @Test
+    void testDeriveWithSinglePointShouldThrow() {
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+
+        // Функция с одной точкой не может быть продифференцирована
+        double[] xValues = {1.0};
+        double[] yValues = {2.0};
+
+        // Создание функции с одной точкой должно бросать исключение из-за минимальной длины
+        assertThrows(IllegalArgumentException.class, () -> {
+            TabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+        });
+    }
+
+    @Test
+    void testDeriveWithNonUniformGrid() {
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+
+        double[] xValues = {0.0, 0.5, 2.0}; // неравномерная сетка
+        double[] yValues = {0.0, 0.25, 4.0}; // f(x) = x^2
+        TabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        TabulatedFunction derivative = operator.derive(function);
+
+        assertEquals(3, derivative.getCount());
+
+        // Первая производная: (0.25 - 0.0) / (0.5 - 0.0) = 0.5
+        assertEquals(0.5, derivative.getY(0), 1e-12);
+
+        // Вторая производная: (4.0 - 0.25) / (2.0 - 0.5) = 3.75 / 1.5 = 2.5
+        assertEquals(2.5, derivative.getY(1), 1e-12);
+
+        // Последняя производная равна предпоследней
+        assertEquals(2.5, derivative.getY(2), 1e-12);
+    }
+
+    @Test
+    void testDeriveWithNegativeValues() {
+        TabulatedDifferentialOperator operator = new TabulatedDifferentialOperator();
+
+        double[] xValues = {-2.0, -1.0, 0.0};
+        double[] yValues = {4.0, 1.0, 0.0}; // f(x) = x^2
+        TabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
+
+        TabulatedFunction derivative = operator.derive(function);
+
+        assertEquals(3, derivative.getCount());
+
+        // Первая производная: (1.0 - 4.0) / (-1.0 - (-2.0)) = -3.0 / 1.0 = -3.0
+        assertEquals(-3.0, derivative.getY(0), 1e-12);
+
+        // Вторая производная: (0.0 - 1.0) / (0.0 - (-1.0)) = -1.0 / 1.0 = -1.0
+        assertEquals(-1.0, derivative.getY(1), 1e-12);
+
+        // Последняя производная равна предпоследней
+        assertEquals(-1.0, derivative.getY(2), 1e-12);
     }
 }
