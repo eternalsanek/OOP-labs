@@ -69,4 +69,16 @@ public final class FunctionsIO {
         }
         dos.flush();
     }
+    public static TabulatedFunction readTabulatedFunction(BufferedInputStream inputStream, TabulatedFunctionFactory factory)
+        throws IOException{
+        DataInputStream dis = new DataInputStream(inputStream);
+        int count = dis.readInt();
+        double[] xValues = new double[count];
+        double[] yValues = new double[count];
+        for(int i = 0; i < count; i++){
+            double x = dis.readDouble();
+            double y = dis.readDouble();
+        }
+        return factory.create(xValues, yValues);
+    }
 }
