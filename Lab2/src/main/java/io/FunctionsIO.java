@@ -83,9 +83,9 @@ public final class FunctionsIO {
     }
 
     public static void serialize(BufferedOutputStream stream, TabulatedFunction function) throws IOException {
-        ObjectOutputStream o = new ObjectOutputStream(stream);
-        o.writeObject(function);
-        o.flush();
+        ObjectOutputStream oos = new ObjectOutputStream(stream);
+        oos.writeObject(function);
+        oos.flush();
     }
     public static TabulatedFunction deserialize(BufferedInputStream stream) throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStream(stream);
