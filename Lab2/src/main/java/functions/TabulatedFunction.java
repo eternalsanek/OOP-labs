@@ -1,6 +1,8 @@
 package functions;
 
-public interface TabulatedFunction extends MathFunction, Iterable<Point>{
+import java.io.Serializable;
+
+public interface TabulatedFunction extends MathFunction, Iterable<Point>, Serializable {
     int getCount();
     double getX(int index);
     double getY(int index);
