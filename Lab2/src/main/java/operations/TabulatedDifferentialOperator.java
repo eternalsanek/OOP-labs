@@ -22,6 +22,7 @@ public class TabulatedDifferentialOperator implements DifferentialOperator<Tabul
             }
             yValues[i] = (points[i + 1].y - points[i].y) / dx;
         }
+        xValues[count-1] = points[count - 1].x;
         yValues[count - 1] = yValues[count-2];
         return factory.create(xValues, yValues);
     }
