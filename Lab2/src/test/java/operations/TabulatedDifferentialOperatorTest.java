@@ -222,4 +222,19 @@ class TabulatedDifferentialOperatorTest {
         // Последняя производная равна предпоследней
         assertEquals(-1.0, derivative.getY(2), 1e-12);
     }
+
+    @Test
+    public void testDeriveSynchronously() {
+        double[] x = {0, 1, 2, 3};
+        double[] y = {0, 1, 4, 9}; // y = x^2
+        TabulatedFunction func = new ArrayTabulatedFunction(x, y);
+
+        TabulatedDifferentialOperator op = new TabulatedDifferentialOperator(new ArrayTabulatedFunctionFactory());
+        TabulatedFunction derived = op.deriveSynchronously(func);
+
+        assertEquals(1.0, derived.getY(0), 1e-6);
+        assertEquals(3.0, derived.getY(1), 1e-6);
+        assertEquals(5.0, derived.getY(2), 1e-6);
+        assertEquals(5.0, derived.getY(3), 1e-6);
+    }
 }
