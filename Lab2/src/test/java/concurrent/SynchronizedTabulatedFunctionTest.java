@@ -84,4 +84,59 @@ class SynchronizedTabulatedFunctionTest {
         }
         assertEquals(4, i);
     }
+
+    @Test
+    void testDoSynchronouslyReturnValue() {
+        double[] x = {0, 1, 2};
+        double[] y = {0, 1, 4};
+        TabulatedFunction baseFunc = new ArrayTabulatedFunction(x, y);
+        SynchronizedTabulatedFunction syncFunc = new SynchronizedTabulatedFunction(baseFunc);
+
+        Double result = syncFunc.doSynchronously(f -> {
+            double y0 = f.getY(0);
+            double y1 = f.getY(1);
+            return y0 + y1;
+        });
+
+        assertEquals(1.0, result);
+    }
+
+    @Test
+    void testDoSynchronouslyModifyAndReturnValue() {
+        double[] x = {0, 1, 2};
+        double[] y = {0, 1, 4};
+        TabulatedFunction baseFunc = new ArrayTabulatedFunction(x, y);
+        SynchronizedTabulatedFunction syncFunc = new SynchronizedTabulatedFunction(baseFunc);
+
+        Double newValue = syncFunc.doSynchronously(f -> {
+            f.setY(2, 10.0);
+            return f.getY(2);
+        });
+
+        assertEquals(10.0, newValue);
+        assertEquals(10.0, baseFunc.getY(2));
+    }
+
+    @Test
+    void testDoSynchronouslyVoidOperation() {
+        double[] x = {0, 1, 2};
+        double[] y = {0, 1, 4};
+        TabulatedFunction baseFunc = new ArrayTabulatedFunction(x, y);
+        SynchronizedTabulatedFunction syncFunc = new SynchronizedTabulatedFunction(baseFunc);
+
+        Void result = syncFunc.doSynchronously(new SynchronizedTabulatedFunction.Operation<Void>() {
+            @Override
+            public Void apply(SynchronizedTabulatedFunction f) {
+                for (int i = 0; i < f.getCount(); i++) {
+                    f.setY(i, f.getY(i) + 1);
+                }
+                return null;
+            }
+        });
+
+        assertEquals(1.0, baseFunc.getY(0));
+        assertEquals(2.0, baseFunc.getY(1));
+        assertEquals(5.0, baseFunc.getY(2));
+        assertNull(result);
+    }
 }
