@@ -71,10 +71,10 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
     @Override
     public synchronized Iterator<Point> iterator() {
         synchronized (function){
-            Point[] functioncopy = TabulatedFunctionOperationService.asPoints(function);
+            Point[] copyfunction = TabulatedFunctionOperationService.asPoints(function);
             return new Iterator<Point>(){
                 private int currentIndex = 0;
-                private final Point[] points = functioncopy;
+                private final Point[] points = copyfunction;
                 @Override
                 public boolean hasNext(){
                     return currentIndex < points.length;
