@@ -1,12 +1,15 @@
 package concurrent;
 
 import functions.TabulatedFunction;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class MultiplyingTask implements Runnable {
     private TabulatedFunction function;
 
     public MultiplyingTask(TabulatedFunction function) {
         this.function = function;
+        log.debug("MultiplyingTask создан для функции с {} точками", function.getCount());
     }
 
     @Override
@@ -18,6 +21,6 @@ public class MultiplyingTask implements Runnable {
         }
 
         Thread t = Thread.currentThread();
-        System.out.println("Flow " + t.getName() + " completed the task");
+        log.info("Поток {} завершил задание", t.getName());
     }
 }

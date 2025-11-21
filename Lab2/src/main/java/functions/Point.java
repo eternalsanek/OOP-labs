@@ -1,5 +1,7 @@
 package functions;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class Point {
     public final double x;
     public final double y;
