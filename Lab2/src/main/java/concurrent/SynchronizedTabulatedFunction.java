@@ -5,12 +5,15 @@ import functions.TabulatedFunction;
 import operations.TabulatedFunctionOperationService;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SynchronizedTabulatedFunction implements TabulatedFunction {
     private final TabulatedFunction function;
 
     public SynchronizedTabulatedFunction(TabulatedFunction function) {
         this.function = function;
+        log.debug("Создан SynchronizedTabulatedFunction для {}", function.getClass().getSimpleName());
     }
 
     public interface Operation<T> {
@@ -72,6 +75,7 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
     public synchronized Iterator<Point> iterator() {
         synchronized (function){
             Point[] copyfunction = TabulatedFunctionOperationService.asPoints(function);
+            log.debug("Создан массив из {} точек для итератора", copyfunction.length);
             return new Iterator<Point>(){
                 private int currentIndex = 0;
                 private final Point[] points = copyfunction;
@@ -82,12 +86,14 @@ public class SynchronizedTabulatedFunction implements TabulatedFunction {
                 @Override
                 public Point next(){
                     if(!hasNext()){
+                        log.error("Попытка вызова next() когда элементов больше нет");
                         throw new NoSuchElementException();
                     }
                     return points[currentIndex++];
                 }
                 @Override
                 public void remove(){
+                    log.error("Попытка вызова remove() у итератора");
                     throw new UnsupportedOperationException();
                 }
             };
