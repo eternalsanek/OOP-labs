@@ -31,7 +31,7 @@ public class Function {
     private String expression;
 
     @OneToMany(mappedBy = "function", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CodePoint> codePoints = new ArrayList<>();
+    private List<Point> points = new ArrayList<>();
 
     // Конструкторы
     public Function() {}
@@ -59,18 +59,18 @@ public class Function {
     public String getExpression() { return expression; }
     public void setExpression(String expression) { this.expression = expression; }
 
-    public List<CodePoint> getCodePoints() { return codePoints; }
-    public void setCodePoints(List<CodePoint> codePoints) { this.codePoints = codePoints; }
+    public List<Point> getCodePoints() { return points; }
+    public void setCodePoints(List<Point> points) { this.points = points; }
 
     // Вспомогательные методы
-    public void addCodePoint(CodePoint codePoint) {
-        codePoints.add(codePoint);
-        codePoint.setFunction(this);
+    public void addCodePoint(Point point) {
+        points.add(point);
+        point.setFunction(this);
     }
 
-    public void removeCodePoint(CodePoint codePoint) {
-        codePoints.remove(codePoint);
-        codePoint.setFunction(null);
+    public void removeCodePoint(Point point) {
+        points.remove(point);
+        point.setFunction(null);
     }
 
     @Override

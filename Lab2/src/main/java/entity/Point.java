@@ -6,7 +6,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "points", indexes = {@Index(name = "idx_function", columnList = "id_function"), @Index(name = "idx_x_val", columnList = "x_val")}, uniqueConstraints = @UniqueConstraint(name = "unique_function_x_val", columnNames = {"id_function", "x_val"}))
-public class CodePoint {
+public class Point {
     @Id
     @GeneratedValue
     @Column(name = "id", columnDefinition = "UUID")
@@ -20,13 +20,13 @@ public class CodePoint {
     private BigDecimal yVal;
 
 
-    public CodePoint() {}
-    public CodePoint(Function function, BigDecimal xVal, BigDecimal yVal) {
+    public Point() {}
+    public Point(Function function, BigDecimal xVal, BigDecimal yVal) {
         this.function = function;
         this.xVal = xVal;
         this.yVal = yVal;
     }
-    public CodePoint(Function function, double xVal, double yVal) {
+    public Point(Function function, double xVal, double yVal) {
         this.function = function;
         this.xVal = BigDecimal.valueOf(xVal);
         this.yVal = BigDecimal.valueOf(yVal);
