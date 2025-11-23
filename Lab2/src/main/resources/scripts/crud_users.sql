@@ -1,10 +1,10 @@
 -- CREATE (insert user)
-INSERT INTO users (name, password_hash)
-VALUES (:name, :password_hash)
+INSERT INTO users (name, password_hash, role)
+VALUES (:name, :password_hash, :role)
 RETURNING id;
 
 -- READ (select by id)
-SELECT id, name, password_hash
+SELECT id, name, password_hash, role
 FROM users
 WHERE id = :id;
 
@@ -16,7 +16,8 @@ WHERE name = :name;
 -- UPDATE (change name or password)
 UPDATE users
 SET name = :new_name,
-    password_hash = :new_password
+    password_hash = :new_password,
+    role = :new_role
 WHERE id = :id;
 
 -- DELETE
