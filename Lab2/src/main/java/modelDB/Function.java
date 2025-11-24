@@ -1,7 +1,9 @@
 package modelDB;
 
 import java.util.UUID;
+import lombok.Data;
 
+@Data
 public class Function {
     public UUID id;
     public UUID ownerId;
