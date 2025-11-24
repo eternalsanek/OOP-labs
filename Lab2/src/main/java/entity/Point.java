@@ -5,14 +5,14 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
-@Table(name = "points", indexes = {@Index(name = "idx_function", columnList = "id_function"), @Index(name = "idx_x_val", columnList = "x_val")}, uniqueConstraints = @UniqueConstraint(name = "unique_function_x_val", columnNames = {"id_function", "x_val"}))
+@Table(name = "Points", indexes = {@Index(name = "idx_function", columnList = "id_function"), @Index(name = "idx_x_val", columnList = "x_val")}, uniqueConstraints = @UniqueConstraint(name = "unique_function_x_val", columnNames = {"id_function", "x_val"}))
 public class Point {
     @Id
     @GeneratedValue
-    @Column(name = "id", columnDefinition = "UUID")
+    @Column(name = "ID", columnDefinition = "UUID")
     private UUID id;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_function", nullable = false)
+    @JoinColumn(name = "ID_function", nullable = false)
     private Function function;
     @Column(name = "x_val", nullable = false, precision = 19, scale = 10)
     private BigDecimal xVal;
