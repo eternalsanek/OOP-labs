@@ -56,7 +56,7 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public void updateUser(UUID id, String newName, String newPasswordHash, String role) {
-        String sql = "UPDATE users SET name = ?, password_hash = ? WHERE id = ?";
+        String sql = "UPDATE users SET name = ?, password_hash = ?, role = ? WHERE id = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, newName);
             ps.setString(2, newPasswordHash);
