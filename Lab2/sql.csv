@@ -1,0 +1,4 @@
+Operation;Records;Framework(ms);Manual(ms)
+Select All Users;10000;549;94
+Select All Functions;10000;8976;3329
+Select Points by Function;10000;5914;2481
