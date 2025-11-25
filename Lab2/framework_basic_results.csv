@@ -1,0 +1,11 @@
+Operation;Records;Time_ms;Implementation
+Select All Users;10000;549;Spring Data JPA
+Select All Functions;10000;8976;Spring Data JPA
+Select Points by Function;10000;5914;Spring Data JPA
+Update Users;100;456;Spring Data JPA
+Update Functions;100;190;Spring Data JPA
+Select Users by Role;~5000;220;Spring Data JPA
+Select Functions by Type;~3333;108;Spring Data JPA
+Delete Points;100;137;Spring Data JPA
+Delete Functions;50;138;Spring Data JPA
+Delete Users;20;51;Spring Data JPA

@@ -21,9 +21,7 @@ public interface PointRepository extends JpaRepository<Point, UUID> {
     List<Point> findByFunctionId(@Param("functionId") UUID functionId);
 
     @Query("SELECT p FROM Point p WHERE p.function = :function AND p.xVal BETWEEN :minX AND :maxX")
-    List<Point> findByFunctionAndXValBetween(@Param("function") Function function,
-                                             @Param("minX") BigDecimal minX,
-                                             @Param("maxX") BigDecimal maxX);
+    List<Point> findByFunctionAndXValBetween(@Param("function") Function function, @Param("minX") BigDecimal minX, @Param("maxX") BigDecimal maxX);
 
     @Query("SELECT p FROM Point p WHERE p.function.owner.id = :ownerId")
     List<Point> findByOwnerId(@Param("ownerId") UUID ownerId);

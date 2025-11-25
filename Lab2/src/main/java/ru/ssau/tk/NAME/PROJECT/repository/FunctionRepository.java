@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -19,6 +18,8 @@ public interface FunctionRepository extends JpaRepository<Function, UUID> {
     List<Function> findByType(String type);
 
     List<Function> findByOwnerAndType(User owner, String type);
+
+    List<Function> findByTypeAndOwner(String type, User owner);
 
     @Query("SELECT f FROM Function f WHERE f.owner.id = :ownerId")
     List<Function> findByOwnerId(@Param("ownerId") UUID ownerId);

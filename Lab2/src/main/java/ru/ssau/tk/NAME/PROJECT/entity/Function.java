@@ -53,11 +53,6 @@ public class Function {
     }
     @Override
     public String toString() {
-        return "Function{" +
-                "id=" + id +
-                ", owner=" + (owner != null ? owner.getId() : "null") +
-                ", name='" + name + '\'' +
-                ", type='" + type + '\'' +
-                '}';
+        return "Function{" + "id=" + id + ", owner=" + (owner != null ? owner.getId() : "null") + ", name='" + name + '\'' + ", type='" + type + '\'' + '}';
     }
 }
