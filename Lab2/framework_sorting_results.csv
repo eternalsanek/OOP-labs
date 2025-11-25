@@ -1,0 +1,25 @@
+Entity;Sort Type;Direction;Records;Time_ms;Implementation
+Users;Name;ASC;10000;514;Spring Data JPA
+Users;Name;DESC;10000;340;Spring Data JPA
+Users;Role;ASC;10000;300;Spring Data JPA
+Users;Role;DESC;10000;348;Spring Data JPA
+Functions;Name;ASC;10000;488;Spring Data JPA
+Functions;Name;DESC;10000;373;Spring Data JPA
+Functions;Type;ASC;10000;312;Spring Data JPA
+Functions;Type;DESC;10000;347;Spring Data JPA
+Functions;Expression;ASC;10000;331;Spring Data JPA
+Users;Role->Name;ASC->ASC;10000;295;Spring Data JPA
+Functions;Type->Name;ASC->ASC;10000;359;Spring Data JPA
+Functions;Type->Name;DESC->ASC;10000;320;Spring Data JPA
+Users Paginated;Name;ASC;10;16;Spring Data JPA
+Functions Paginated;Type;ASC;10;6;Spring Data JPA
+Users Paginated;Name;ASC;50;7;Spring Data JPA
+Functions Paginated;Type;ASC;50;6;Spring Data JPA
+Users Paginated;Name;ASC;100;9;Spring Data JPA
+Functions Paginated;Type;ASC;100;8;Spring Data JPA
+Users Paginated;Name;ASC;500;25;Spring Data JPA
+Functions Paginated;Type;ASC;500;30;Spring Data JPA
+Users Different Pages;Name;ASC;100;12;Spring Data JPA
+Users Different Pages;Name;ASC;100;12;Spring Data JPA
+Users Different Pages;Name;ASC;100;13;Spring Data JPA
+Users Different Pages;Name;ASC;100;16;Spring Data JPA
