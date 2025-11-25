@@ -113,5 +113,4 @@ public class UserService {
         log.debug("Хеширование пароля");
         return Integer.toString(password.hashCode());
     }
-
 }

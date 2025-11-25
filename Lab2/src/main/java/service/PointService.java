@@ -1,3 +1,4 @@
+// PointService.java
 package service;
 
 import dao.DAOFactory;
@@ -27,31 +28,28 @@ public class PointService {
         log.debug("Создан PointService с переданным PointDAO (для тестов)");
     }
 
-    public PointDTO createPoint(PointCreateDTO pointDTO) {
-        log.info("Создание точки для функции ID: {}", pointDTO.getFunctionId());
+    public PointDTO createPoint(UUID functionId, PointCreateDTO pointDTO) {
+        log.info("Создание точки для функции ID: {}", functionId);
         try {
             log.debug("Данные точки: x={}, y={}", pointDTO.getXVal(), pointDTO.getYVal());
-            List<Point> existingPoints = pointDAO.getPointsByFunction(pointDTO.getFunctionId());
+            List<Point> existingPoints = pointDAO.getPointsByFunction(functionId);
             boolean pointExists = existingPoints.stream()
-                    .anyMatch(p -> p.getXVal() == pointDTO.getXVal());
+                    .anyMatch(p -> Math.abs(p.getXVal() - pointDTO.getXVal()) < 0.0001);
             if (pointExists) {
                 log.warn("Точка с x={} уже существует для функции ID={}",
-                        pointDTO.getXVal(), pointDTO.getFunctionId());
+                        pointDTO.getXVal(), functionId);
                 throw new RuntimeException("Точка с таким X уже существует для этой функции");
             }
-            pointDAO.createPoint(
-                    pointDTO.getFunctionId(),
-                    pointDTO.getXVal(),
-                    pointDTO.getYVal()
-            );
-            List<Point> points = pointDAO.getPointsByFunction(pointDTO.getFunctionId());
+            pointDAO.createPoint(functionId, pointDTO.getXVal(), pointDTO.getYVal());
+            List<Point> points = pointDAO.getPointsByFunction(functionId);
             Optional<Point> createdPoint = points.stream()
-                    .filter(p -> p.getXVal() == pointDTO.getXVal() && p.getYVal() == pointDTO.getYVal())
+                    .filter(p -> Math.abs(p.getXVal() - pointDTO.getXVal()) < 0.0001 &&
+                            Math.abs(p.getYVal() - pointDTO.getYVal()) < 0.0001)
                     .findFirst();
             PointDTO result = createdPoint.map(this::toDTO)
                     .orElseThrow(() -> {
                         log.error("Не удалось найти созданную точку: функция={}, x={}, y={}",
-                                pointDTO.getFunctionId(), pointDTO.getXVal(), pointDTO.getYVal());
+                                functionId, pointDTO.getXVal(), pointDTO.getYVal());
                         return new RuntimeException("Точка не найдена после создания");
                     });
             log.info("Точка успешно создана: ID={}, функция={}, координаты=({}, {})",
@@ -59,6 +57,23 @@ public class PointService {
             return result;
         } catch (Exception e) {
             log.error("Ошибка при создании точки: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    public List<PointDTO> createPoints(UUID functionId, List<PointCreateDTO> pointsDTO) {
+        log.info("Создание {} точек для функции ID: {}", pointsDTO.size(), functionId);
+
+        try {
+            List<PointDTO> results = pointsDTO.stream()
+                    .map(pointDTO -> createPoint(functionId, pointDTO))
+                    .collect(Collectors.toList());
+
+            log.info("Успешно создано {} точек для функции ID: {}", results.size(), functionId);
+            return results;
+
+        } catch (Exception e) {
+            log.error("Ошибка при создании точек: {}", e.getMessage(), e);
             throw e;
         }
     }
@@ -127,6 +142,7 @@ public class PointService {
         try {
             List<Point> points = pointDAO.getPointsByFunction(functionId);
             log.debug("Будет удалено {} точек функции ID={}", points.size(), functionId);
+
             for (Point point : points) {
                 pointDAO.deletePoint(point.getId());
             }
