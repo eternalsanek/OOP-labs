@@ -41,13 +41,13 @@ public class Function {
     public void setType(String type) { this.type = type; }
     public String getExpression() { return expression; }
     public void setExpression(String expression) { this.expression = expression; }
-    public List<Point> getCodePoints() { return points; }
-    public void setCodePoints(List<Point> points) { this.points = points; }
-    public void addCodePoint(Point point) {
+    public List<Point> getPoints() { return points; }
+    public void setPoints(List<Point> points) { this.points = points; }
+    public void addPoint(Point point) {
         points.add(point);
         point.setFunction(this);
     }
-    public void removeCodePoint(Point point) {
+    public void removePoint(Point point) {
         points.remove(point);
         point.setFunction(null);
     }
