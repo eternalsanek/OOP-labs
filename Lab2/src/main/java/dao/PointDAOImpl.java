@@ -109,6 +109,18 @@ public class PointDAOImpl implements PointDAO {
         }
     }
 
+    @Override
+    public void close() {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+                log.debug("Соединение PointDAOImpl закрыто");
+            }
+        } catch (SQLException e) {
+            log.error("Ошибка при закрытии соединения PointDAOImpl: {}", e.getMessage(), e);
+        }
+    }
+
     public void deletePointsByFunction(UUID funcId) {
         String sql = "DELETE FROM points WHERE id_function = ?";
         log.debug("SQL запрос удаления всех точек функции: ID={}", funcId);

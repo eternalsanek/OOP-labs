@@ -10,4 +10,5 @@ public interface PointDAO {
     List<Point> getPointsByFunction(UUID funcId);
     void updatePoint(UUID id, double x, double y);
     void deletePoint(UUID id);
+    void close();
 }

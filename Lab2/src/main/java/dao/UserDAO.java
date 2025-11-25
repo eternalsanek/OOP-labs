@@ -11,4 +11,5 @@ public interface UserDAO {
     List<User> getAllUsers();
     void updateUser(UUID id, String newName, String newPasswordHash, String role);
     void deleteUser(UUID id);
+    void close();
 }

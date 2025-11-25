@@ -128,6 +128,18 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
+    @Override
+    public void close() {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+                log.debug("Соединение PointDAOImpl закрыто");
+            }
+        } catch (SQLException e) {
+            log.error("Ошибка при закрытии соединения PointDAOImpl: {}", e.getMessage(), e);
+        }
+    }
+
     private User map(ResultSet rs) throws SQLException {
         User user = new User();
         user.setId((UUID) rs.getObject("id"));

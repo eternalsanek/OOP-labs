@@ -110,6 +110,18 @@ public class FunctionDAOImpl implements FunctionDAO {
         }
     }
 
+    @Override
+    public void close() {
+        try {
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+                log.debug("Соединение PointDAOImpl закрыто");
+            }
+        } catch (SQLException e) {
+            log.error("Ошибка при закрытии соединения PointDAOImpl: {}", e.getMessage(), e);
+        }
+    }
+
     private Function map(ResultSet rs) throws SQLException {
         Function function = new Function();
         function.setId((UUID) rs.getObject("id"));

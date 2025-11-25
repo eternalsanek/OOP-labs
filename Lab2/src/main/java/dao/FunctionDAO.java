@@ -10,4 +10,5 @@ public interface FunctionDAO {
     List<Function> getFunctionsByOwner(UUID ownerId);
     void updateFunction(UUID id, String name, String type, String expression);
     void deleteFunction(UUID id);
+    void close();
 }
