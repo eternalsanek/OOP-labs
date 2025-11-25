@@ -1,0 +1,11 @@
+package ru.ssau.tk.NAME.PROJECT.exceptions;
+
+public class InconsistentFunctionsException extends RuntimeException {
+    public InconsistentFunctionsException() {
+        super();
+    }
+
+    public InconsistentFunctionsException(String message) {
+        super(message);
+    }
+}

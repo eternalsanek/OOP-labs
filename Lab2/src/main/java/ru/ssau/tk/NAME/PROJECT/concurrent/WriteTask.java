@@ -1,0 +1,27 @@
+package ru.ssau.tk.NAME.PROJECT.concurrent;
+
+import ru.ssau.tk.NAME.PROJECT.functions.TabulatedFunction;
+
+public class WriteTask implements Runnable {
+    private TabulatedFunction function;
+    private double value;
+    public WriteTask(TabulatedFunction function, double value){
+        this.function = function;
+        this.value = value;
+    }
+    @Override
+    public void run() {
+        for(int i = 0; i < function.getCount(); i++){
+            synchronized (function){
+                function.setY(i, value);
+                System.out.printf("Writing for index %d complete%n", i);
+            }
+            try{
+                Thread.sleep(1);
+            }catch(InterruptedException e){
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+}
