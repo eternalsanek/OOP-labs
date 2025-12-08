@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laboop-app
+    ports:
+      - "8080:8080"
+    environment:
+      # База данных
+      SPRING_DATASOURCE_URL: jdbc:postgresql://host.docker.internal:5432/labOOP_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 13579
+      
+      # JPA
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      SPRING_JPA_SHOW_SQL: "true"
+      
+      # Server
+      SERVER_PORT: 8080
+      
+      # Logging
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: TRACE
+      LOGGING_LEVEL_ORG_HIBERNATE: INFO
+      LOGGING_LEVEL_ORG_HIBERNATE_SQL: DEBUG
+      LOGGING_LEVEL_ORG_HIBERNATE_TYPE_DESCRIPTOR_SQL: TRACE
+      LOGGING_LEVEL_RU_SSAU_TK: DEBUG
+
+      # Actuator
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
+
+      # Для отладки ошибок
+      SERVER_ERROR_INCLUDE_STACKTRACE: always
+      SERVER_ERROR_INCLUDE_MESSAGE: always
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # ⚠️ МАППИНГ ДИРЕКТОРИИ ЛОГОВ
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+    restart: unless-stopped

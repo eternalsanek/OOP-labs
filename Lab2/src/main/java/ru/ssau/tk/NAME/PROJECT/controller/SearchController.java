@@ -1,4 +1,4 @@
-package ru.ssau.tk.NAME.PROJECT.search;
+package ru.ssau.tk.NAME.PROJECT.controller;
 
 import ru.ssau.tk.NAME.PROJECT.entity.Function;
 import ru.ssau.tk.NAME.PROJECT.entity.Point;
@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.ssau.tk.NAME.PROJECT.search.SearchRequest;
+import ru.ssau.tk.NAME.PROJECT.search.SearchService;
 
 import java.util.List;
 import java.util.Optional;

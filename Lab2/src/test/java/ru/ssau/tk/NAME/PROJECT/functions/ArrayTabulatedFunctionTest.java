@@ -368,14 +368,16 @@ public class ArrayTabulatedFunctionTest {
 
     @Test
     void testInterpolateInvalidFloorIndex() {
-        double[] arrX = {0.0, 1.0, 2.0};
-        double[] arrY = {0.0, 1.0, 4.0};
-        ArrayTabulatedFunction arr = new ArrayTabulatedFunction(arrX, arrY);
+        // Создаем функцию
+        double[] xValues = {1.0, 2.0, 3.0, 4.0};
+        double[] yValues = {1.0, 4.0, 9.0, 16.0};
+        ArrayTabulatedFunction function = new ArrayTabulatedFunction(xValues, yValues);
 
-        // floorIndex должен быть в диапазоне [0, count-2] для интерполяции
-        // Эти случаи будут обрабатываться в вызывающем коде, не в самом interpolate
-        // Поэтому здесь нет исключений, но важно протестировать граничные значения
-        assertEquals(7.0, arr.interpolate(3.0, 1)); // экстраполяция через interpolate
+        // Тестируем с недопустимым floorIndex
+        assertThrows(InterpolationException.class, () -> {
+            // Вызываем interpolate с x вне диапазона для данного floorIndex
+            function.interpolate(1.5, 2); // floorIndex=2, но x=1.5 принадлежит интервалу [1.0, 2.0]
+        });
     }
 
     @Test
