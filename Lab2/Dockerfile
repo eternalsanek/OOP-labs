@@ -18,8 +18,8 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Создание директории для логов
-RUN mkdir -p /app/logs && chmod 777 /app/logs
+# Создание директорий для логов
+RUN mkdir -p /app/logs /app/reports
 
 # Копирование JAR
 COPY --from=build /app/target/*.jar app.jar

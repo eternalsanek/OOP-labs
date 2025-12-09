@@ -8,12 +8,9 @@
             <level>DEBUG</level>
         </filter>
     </appender>
-
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!-- ⚠️ ИЗМЕНИТЕ: Logs/ → /app/logs/ -->
         <file>/app/logs/app.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <!-- ⚠️ ИЗМЕНИТЕ: Logs/ → /app/logs/ -->
             <fileNamePattern>/app/logs/LOG.%i.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
             <maxHistory>7</maxHistory>
@@ -26,7 +23,6 @@
             <level>INFO</level>
         </filter>
     </appender>
-
     <root level="DEBUG">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />

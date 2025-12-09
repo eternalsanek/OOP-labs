@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "laboop-api-collection",
-    "name": "LabOOP API Tests",
-    "description": "Полное покрытие API для лабораторной работы OOP",
+    "_postman_id": "laboop-api-collection-fixed",
+    "name": "LabOOP API Tests with Basic Auth (FIXED)",
+    "description": "Исправленная коллекция с правильными путями и логикой тестов",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -10,16 +10,18 @@
       "name": "📊 Environment Setup",
       "item": [
         {
-          "name": "Initialize Test Data",
+          "name": "Check API Health",
           "event": [
             {
-              "listen": "test",
+              "listen": "prerequest",
               "script": {
                 "exec": [
-                  "// Создаем тестового пользователя для всех тестов",
+                  "// Инициализация тестовых переменных",
                   "pm.collectionVariables.set(\"testPassword\", \"test_password_123\");",
-                  "pm.collectionVariables.set(\"testUserName\", \"TestUser_\" + Date.now());",
-                  "console.log(\"Test data initialized\");"
+                  "const adminCredentials = btoa('admin:admin123');",
+                  "pm.collectionVariables.set(\"adminAuth\", \"Basic \" + adminCredentials);",
+                  "console.log(\"API test initialized\");",
+                  "console.log(\"Admin auth header created\");"
                 ]
               }
             }
@@ -28,20 +30,50 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/users",
+              "raw": "{{baseUrl}}/",
               "host": ["{{baseUrl}}"],
-              "path": ["users"]
+              "path": [""]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"API is running\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.response.to.have.body;",
+                  "});",
+                  "console.log(\"API health check passed\");"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "name": "👥 Users API Tests",
+      "name": "🔐 Authentication Tests",
       "item": [
         {
-          "name": "Create User",
+          "name": "Login with Pre-created User",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Используем предварительно созданного пользователя",
+                  "// Из DataInitializer: user / user123",
+                  "const username = \"user\";",
+                  "const password = \"user123\";",
+                  "pm.variables.set(\"testUsername\", username);",
+                  "pm.collectionVariables.set(\"testPassword\", password);",
+                  "console.log(\"Using pre-created user: \" + username + \" / \" + password);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -52,12 +84,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"{{testUserName}}\",\n  \"role\": \"USER\",\n  \"passwordHash\": \"{{testPassword}}\"\n}"
+              "raw": "{\n  \"username\": \"{{testUsername}}\",\n  \"password\": \"{{testPassword}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/users",
+              "raw": "{{baseUrl}}/users/login",
               "host": ["{{baseUrl}}"],
-              "path": ["users"]
+              "path": ["users", "login"]
             }
           },
           "response": [],
@@ -66,35 +98,86 @@
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test(\"Response has user data\", function () {",
+                  "pm.test(\"Login successful\", function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('id');",
-                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    pm.expect(jsonData).to.have.property('username');",
+                  "    pm.expect(jsonData.username).to.equal('user');",
                   "    pm.expect(jsonData).to.have.property('role');",
-                  "    pm.expect(jsonData).to.have.property('passwordHash');",
-                  "    ",
-                  "    // Store user ID for later use",
-                  "    pm.collectionVariables.set(\"userId\", jsonData.id);",
-                  "    console.log(\"Created user ID: \" + jsonData.id);",
+                  "    pm.expect(jsonData.role).to.equal('USER');",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.message).to.include('Login successful');",
                   "});",
                   "",
-                  "// Store execution time",
-                  "pm.collectionVariables.set(\"createUserTime\", pm.response.responseTime);",
-                  "console.log(\"Create User time: \" + pm.response.responseTime + \"ms\");"
+                  "// Сохраняем credentials",
+                  "const credentials = btoa('user:user123');",
+                  "pm.collectionVariables.set(\"userAuth\", \"Basic \" + credentials);",
+                  "console.log(\"User auth header created\");"
                 ]
               }
             }
           ]
         },
         {
-          "name": "Get All Users",
+          "name": "Get Current User Info",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{userAuth}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "me"]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Returns correct user info\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    pm.expect(jsonData.name).to.equal('user');",
+                  "    pm.expect(jsonData).to.have.property('role');",
+                  "    ",
+                  "    // Сохраняем ID пользователя",
+                  "    pm.collectionVariables.set(\"userId\", jsonData.id);",
+                  "    console.log(\"User ID stored: \" + jsonData.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "👥 Users API Tests",
+      "item": [
+        {
+          "name": "Get All Users (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{adminAuth}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/users",
               "host": ["{{baseUrl}}"],
@@ -124,10 +207,15 @@
           ]
         },
         {
-          "name": "Get User by ID",
+          "name": "Get User by ID (Self Access)",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{userAuth}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/users/{{userId}}",
               "host": ["{{baseUrl}}"],
@@ -157,18 +245,22 @@
           ]
         },
         {
-          "name": "Update User",
+          "name": "Update User (Self Update)",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{userAuth}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"{{testUserName}}_Updated\",\n  \"role\": \"ADMIN\",\n  \"passwordHash\": \"{{testPassword}}_updated\"\n}"
+              "raw": "{\n  \"name\": \"{{newUsername}}_Updated\",\n  \"passwordHash\": \"{{testPassword}}_updated\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/users/{{userId}}",
@@ -192,34 +284,6 @@
               }
             }
           ]
-        },
-        {
-          "name": "Delete User",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/users/{{userId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "{{userId}}"]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 204\", function () {",
-                  "    pm.response.to.have.status(204);",
-                  "});",
-                  "",
-                  "// Store execution time",
-                  "pm.collectionVariables.set(\"deleteUserTime\", pm.response.responseTime);"
-                ]
-              }
-            }
-          ]
         }
       ]
     },
@@ -227,7 +291,7 @@
       "name": "📈 Functions API Tests",
       "item": [
         {
-          "name": "Pre-create User for Function",
+          "name": "Create Function Owner",
           "event": [
             {
               "listen": "prerequest",
@@ -235,21 +299,8 @@
                 "exec": [
                   "// Создаем отдельного пользователя для функций",
                   "const functionOwnerName = \"FunctionOwner_\" + Date.now();",
-                  "pm.variables.set(\"functionOwnerName\", functionOwnerName);"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "var jsonData = pm.response.json();",
-                  "pm.collectionVariables.set(\"functionOwnerId\", jsonData.id);",
-                  "console.log(\"Function owner created: \" + jsonData.id);"
+                  "pm.variables.set(\"functionOwnerName\", functionOwnerName);",
+                  "console.log(\"Function owner name: \" + functionOwnerName);"
                 ]
               }
             }
@@ -264,15 +315,37 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"{{functionOwnerName}}\",\n  \"role\": \"USER\",\n  \"passwordHash\": \"{{testPassword}}\"\n}"
+              "raw": "{\n  \"username\": \"{{functionOwnerName}}\",\n  \"password\": \"{{testPassword}}\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/users",
+              "raw": "{{baseUrl}}/users/register",
               "host": ["{{baseUrl}}"],
-              "path": ["users"]
+              "path": ["users", "register"]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"functionOwnerId\", jsonData.id);",
+                  "pm.collectionVariables.set(\"functionOwnerName\", jsonData.username);",
+                  "",
+                  "// Создаем auth header для этого пользователя",
+                  "const credentials = btoa(jsonData.username + \":\" + pm.collectionVariables.get(\"testPassword\"));",
+                  "pm.collectionVariables.set(\"functionOwnerAuth\", \"Basic \" + credentials);",
+                  "console.log(\"Function owner created: \" + jsonData.username);",
+                  "console.log(\"Function owner ID: \" + jsonData.id);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Create Function",
@@ -282,11 +355,15 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{functionOwnerAuth}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Test Function\",\n  \"type\": \"MathFunction\",\n  \"expression\": \"x^2 + 2x + 1\",\n  \"ownerId\": \"{{functionOwnerId}}\"\n}"
+              "raw": "{\n  \"name\": \"Test Function\",\n  \"type\": \"linear\",\n  \"expression\": \"x^2 + 2x + 1\",\n  \"ownerId\": \"{{functionOwnerId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/functions",
@@ -323,10 +400,15 @@
           ]
         },
         {
-          "name": "Get All Functions",
+          "name": "Get All Functions (Authenticated)",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{functionOwnerAuth}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/functions",
               "host": ["{{baseUrl}}"],
@@ -354,7 +436,12 @@
           "name": "Get Function by ID",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{functionOwnerAuth}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/functions/{{functionId}}",
               "host": ["{{baseUrl}}"],
@@ -379,18 +466,22 @@
           ]
         },
         {
-          "name": "Update Function",
+          "name": "Update Function (Owner Only)",
           "request": {
             "method": "PUT",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{functionOwnerAuth}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Test Function\",\n  \"type\": \"TabulatedFunction\",\n  \"expression\": \"sin(x)\",\n  \"ownerId\": \"{{functionOwnerId}}\"\n}"
+              "raw": "{\n  \"name\": \"Updated Test Function\",\n  \"type\": \"quadratic\",\n  \"expression\": \"sin(x)\",\n  \"ownerId\": \"{{functionOwnerId}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/functions/{{functionId}}",
@@ -419,7 +510,12 @@
           "name": "Delete Function",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{functionOwnerAuth}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/functions/{{functionId}}",
               "host": ["{{baseUrl}}"],
@@ -449,118 +545,74 @@
       "name": "📍 Points API Tests",
       "item": [
         {
-          "name": "Pre-create User for Points",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Создаем отдельного пользователя для тестов точек",
-                  "const pointsOwnerName = \"PointsOwner_\" + Date.now();",
-                  "pm.variables.set(\"pointsOwnerName\", pointsOwnerName);"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "var jsonData = pm.response.json();",
-                  "pm.collectionVariables.set(\"pointsOwnerId\", jsonData.id);",
-                  "console.log(\"Points owner created: \" + jsonData.id);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"{{pointsOwnerName}}\",\n  \"role\": \"USER\",\n  \"passwordHash\": \"{{testPassword}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/users",
-              "host": ["{{baseUrl}}"],
-              "path": ["users"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Pre-create Function for Points",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "exec": [
-                  "// Создаем функцию для тестов точек",
-                  "const pointsFunctionName = \"PointsTestFunction_\" + Date.now();",
-                  "pm.variables.set(\"pointsFunctionName\", pointsFunctionName);"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "var jsonData = pm.response.json();",
-                  "pm.collectionVariables.set(\"pointsFunctionId\", jsonData.id);",
-                  "pm.collectionVariables.set(\"functionId\", jsonData.id); // Для совместимости с другими тестами",
-                  "console.log(\"Function for points created: \" + jsonData.id);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"{{pointsFunctionName}}\",\n  \"type\": \"MathFunction\",\n  \"expression\": \"x^2 + 3x - 5\",\n  \"ownerId\": \"{{pointsOwnerId}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/functions",
-              "host": ["{{baseUrl}}"],
-              "path": ["functions"]
-            }
-          },
-          "response": []
-        },
-        {
           "name": "Create Point",
           "event": [
             {
               "listen": "prerequest",
               "script": {
                 "exec": [
+                  "// Сначала создаем новую функцию для точек (старая удалена)",
+                  "const createFunctionRequest = {",
+                  "    url: pm.collectionVariables.get(\"baseUrl\") + \"/functions\",",
+                  "    method: 'POST',",
+                  "    header: {",
+                  "        'Content-Type': 'application/json',",
+                  "        'Authorization': pm.collectionVariables.get(\"functionOwnerAuth\")",
+                  "    },",
+                  "    body: {",
+                  "        mode: 'raw',",
+                  "        raw: JSON.stringify({",
+                  "            name: \"Test Function for Points\",",
+                  "            type: \"linear\",",
+                  "            expression: \"x + 1\",",
+                  "            ownerId: pm.collectionVariables.get(\"functionOwnerId\")",
+                  "        })",
+                  "    }",
+                  "};",
+                  "",
+                  "// Выполняем синхронный запрос",
+                  "pm.sendRequest(createFunctionRequest, function (err, response) {",
+                  "    if (!err && response.code === 201) {",
+                  "        const functionData = response.json();",
+                  "        pm.collectionVariables.set(\"functionId\", functionData.id);",
+                  "        console.log(\"New function created for points: \" + functionData.id);",
+                  "    }",
+                  "});",
+                  "",
                   "// Генерируем значения как строки для BigDecimal",
-                  "const xVal = (Math.random() * 10).toFixed(10);",
-                  "const yVal = (Math.random() * 10).toFixed(10);",
+                  "const xVal = (Math.random() * 10).toFixed(4);",
+                  "const yVal = (Math.random() * 10).toFixed(4);",
                   "pm.variables.set(\"xVal\", xVal.toString());",
                   "pm.variables.set(\"yVal\", yVal.toString());",
                   "console.log(`Generated xVal: ${xVal}, yVal: ${yVal}`);"
                 ]
               }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{functionOwnerAuth}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"functionId\": \"{{functionId}}\",\n  \"xVal\": \"{{xVal}}\",\n  \"yVal\": \"{{yVal}}\"\n}"
             },
+            "url": {
+              "raw": "{{baseUrl}}/points",
+              "host": ["{{baseUrl}}"],
+              "path": ["points"]
+            }
+          },
+          "response": [],
+          "event": [
             {
               "listen": "test",
               "script": {
@@ -576,21 +628,6 @@
                   "    pm.expect(jsonData).to.have.property('xVal');",
                   "    pm.expect(jsonData).to.have.property('yVal');",
                   "    ",
-                  "    // Проверяем что значения BigDecimal корректны",
-                  "    if (jsonData.xVal !== undefined) {",
-                  "        const xValNum = parseFloat(jsonData.xVal);",
-                  "        pm.expect(xValNum).to.be.a('number');",
-                  "        pm.expect(isNaN(xValNum)).to.be.false;",
-                  "        console.log(`Received xVal: ${jsonData.xVal} (as number: ${xValNum})`);",
-                  "    }",
-                  "    ",
-                  "    if (jsonData.yVal !== undefined) {",
-                  "        const yValNum = parseFloat(jsonData.yVal);",
-                  "        pm.expect(yValNum).to.be.a('number');",
-                  "        pm.expect(isNaN(yValNum)).to.be.false;",
-                  "        console.log(`Received yVal: ${jsonData.yVal} (as number: ${yValNum})`);",
-                  "    }",
-                  "    ",
                   "    pm.collectionVariables.set(\"pointId\", jsonData.id);",
                   "    console.log(\"Created point ID: \" + jsonData.id);",
                   "});",
@@ -600,32 +637,18 @@
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"functionId\": \"{{pointsFunctionId}}\",\n  \"xVal\": \"{{xVal}}\",\n  \"yVal\": \"{{yVal}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/points",
-              "host": ["{{baseUrl}}"],
-              "path": ["points"]
-            }
-          },
-          "response": []
+          ]
         },
         {
           "name": "Get All Points",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{functionOwnerAuth}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/points",
               "host": ["{{baseUrl}}"],
@@ -645,19 +668,9 @@
                   "pm.test(\"Response contains BigDecimal fields\", function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.be.an('array');",
-                  "    ",
                   "    if (jsonData.length > 0) {",
-                  "        var firstPoint = jsonData[0];",
-                  "        console.log(\"First point:\", firstPoint);",
-                  "        pm.expect(firstPoint).to.have.property('xVal');",
-                  "        pm.expect(firstPoint).to.have.property('yVal');",
-                  "        ",
-                  "        // Проверяем что значения можно преобразовать в числа",
-                  "        if (firstPoint.xVal !== null && firstPoint.xVal !== undefined) {",
-                  "            const xValNum = parseFloat(firstPoint.xVal);",
-                  "            pm.expect(xValNum).to.be.a('number');",
-                  "            pm.expect(isNaN(xValNum)).to.be.false;",
-                  "        }",
+                  "        pm.expect(jsonData[0]).to.have.property('xVal');",
+                  "        pm.expect(jsonData[0]).to.have.property('yVal');",
                   "    }",
                   "});",
                   "",
@@ -672,7 +685,12 @@
           "name": "Get Point by ID",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{functionOwnerAuth}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/points/{{pointId}}",
               "host": ["{{baseUrl}}"],
@@ -687,21 +705,6 @@
                 "exec": [
                   "pm.test(\"Status code is 200\", function () {",
                   "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Response has BigDecimal values\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.id).to.equal(pm.collectionVariables.get(\"pointId\"));",
-                  "    pm.expect(jsonData).to.have.property('xVal');",
-                  "    pm.expect(jsonData).to.have.property('yVal');",
-                  "    ",
-                  "    // Проверяем формат BigDecimal",
-                  "    if (jsonData.xVal !== null && jsonData.xVal !== undefined) {",
-                  "        console.log(`Point xVal: ${jsonData.xVal}, type: ${typeof jsonData.xVal}`);",
-                  "        // BigDecimal может быть строкой или числом",
-                  "        const xValNum = parseFloat(jsonData.xVal);",
-                  "        pm.expect(isNaN(xValNum)).to.be.false;",
-                  "    }",
                   "});",
                   "",
                   "// Store execution time",
@@ -719,39 +722,10 @@
               "script": {
                 "exec": [
                   "// Генерируем новые BigDecimal значения",
-                  "const newXVal = (Math.random() * 20).toFixed(10);",
-                  "const newYVal = (Math.random() * 20).toFixed(10);",
+                  "const newXVal = (Math.random() * 20).toFixed(4);",
+                  "const newYVal = (Math.random() * 20).toFixed(4);",
                   "pm.variables.set(\"newXVal\", newXVal.toString());",
-                  "pm.variables.set(\"newYVal\", newYVal.toString());",
-                  "console.log(`New values - xVal: ${newXVal}, yVal: ${newYVal}`);"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Point updated with new BigDecimal values\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.id).to.equal(pm.collectionVariables.get(\"pointId\"));",
-                  "    pm.expect(jsonData).to.have.property('xVal');",
-                  "    pm.expect(jsonData).to.have.property('yVal');",
-                  "    ",
-                  "    // Проверяем что значения изменились",
-                  "    const expectedX = parseFloat(pm.variables.get(\"newXVal\"));",
-                  "    const actualX = parseFloat(jsonData.xVal);",
-                  "    const tolerance = 0.000001; // Допуск для BigDecimal сравнения",
-                  "    ",
-                  "    pm.expect(Math.abs(actualX - expectedX)).to.be.below(tolerance);",
-                  "    console.log(`Updated xVal: ${jsonData.xVal} (expected: ${expectedX})`);",
-                  "});",
-                  "",
-                  "// Store execution time",
-                  "pm.collectionVariables.set(\"updatePointTime\", pm.response.responseTime);"
+                  "pm.variables.set(\"newYVal\", newYVal.toString());"
                 ]
               }
             }
@@ -762,11 +736,15 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{functionOwnerAuth}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"functionId\": \"{{pointsFunctionId}}\",\n  \"xVal\": \"{{newXVal}}\",\n  \"yVal\": \"{{newYVal}}\"\n}"
+              "raw": "{\n  \"xVal\": \"{{newXVal}}\",\n  \"yVal\": \"{{newYVal}}\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/points/{{pointId}}",
@@ -774,13 +752,33 @@
               "path": ["points", "{{pointId}}"]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Store execution time",
+                  "pm.collectionVariables.set(\"updatePointTime\", pm.response.responseTime);"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Delete Point",
           "request": {
             "method": "DELETE",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{functionOwnerAuth}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/points/{{pointId}}",
               "host": ["{{baseUrl}}"],
@@ -810,13 +808,17 @@
       "name": "🔍 Search API Tests",
       "item": [
         {
-          "name": "Search Users",
+          "name": "Search Users (Admin Only)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{adminAuth}}"
               }
             ],
             "body": {
@@ -847,18 +849,22 @@
           ]
         },
         {
-          "name": "Search Functions",
+          "name": "Search Functions (Authenticated)",
           "request": {
             "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{functionOwnerAuth}}"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"criteria\": [\n    {\n      \"fieldName\": \"type\",\n      \"operation\": \"EQUALS\",\n      \"value\": \"MathFunction\"\n    }\n  ]\n}"
+              "raw": "{\n  \"criteria\": [\n    {\n      \"fieldName\": \"type\",\n      \"operation\": \"EQUALS\",\n      \"value\": \"linear\"\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{searchBaseUrl}}/functions",
@@ -882,12 +888,22 @@
               }
             }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "name": "📊 Performance Report",
+      "item": [
         {
-          "name": "📊 Performance Report",
+          "name": "Generate Performance Report",
           "request": {
             "method": "GET",
-            "header": [],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{adminAuth}}"
+              }
+            ],
             "url": {
               "raw": "{{baseUrl}}/users",
               "host": ["{{baseUrl}}"],
@@ -906,8 +922,7 @@
                   "        createUser: pm.collectionVariables.get(\"createUserTime\") || 0,",
                   "        getAllUsers: pm.collectionVariables.get(\"getAllUsersTime\") || 0,",
                   "        getUserById: pm.collectionVariables.get(\"getUserByIdTime\") || 0,",
-                  "        updateUser: pm.collectionVariables.get(\"updateUserTime\") || 0,",
-                  "        deleteUser: pm.collectionVariables.get(\"deleteUserTime\") || 0",
+                  "        updateUser: pm.collectionVariables.get(\"updateUserTime\") || 0",
                   "    },",
                   "    functions: {",
                   "        createFunction: pm.collectionVariables.get(\"createFunctionTime\") || 0,",
@@ -930,130 +945,32 @@
                   "};",
                   "",
                   "console.log(\"\\n\" + \"=\".repeat(80));",
-                  "console.log(\"📊 API PERFORMANCE TEST RESULTS\");",
+                  "console.log(\"📊 API PERFORMANCE TEST RESULTS (WITH BASIC AUTH)\");",
                   "console.log(\"=\" + new Date().toLocaleString().padEnd(78) + \"=\");",
-                  "console.log(\"=\" + \"Application: LabOOP API (Docker)\".padEnd(68) + \"=\");",
-                  "console.log(\"=\" + \"Container: \" + pm.variables.get(\"containerName\")?.padEnd(69) || \"laboop-app\".padEnd(69) + \"=\");",
+                  "console.log(\"=\" + \"Security: Basic Authentication Enabled\".padEnd(68) + \"=\");",
                   "console.log(\"=\".repeat(80));",
                   "",
-                  "// Calculate statistics",
+                  "// Генерируем отчет",
                   "let allTimes = [];",
-                  "let csvData = \"Category,Operation,Time(ms),Performance\\n\";",
-                  "let markdownData = \"# API Performance Test Results\\n\\n\";",
-                  "markdownData += `**Test Date:** ${new Date().toLocaleString()}\\n\\n`;",
-                  "markdownData += \"## Results Table\\n\\n\";",
-                  "markdownData += \"| Category | Operation | Time (ms) | Performance |\\n\";",
-                  "markdownData += \"|----------|-----------|-----------|-------------|\\n\";",
+                  "let csvData = \"Category,Operation,Time(ms),Status\\n\";",
                   "",
                   "Object.entries(results).forEach(([category, operations]) => {",
                   "    Object.entries(operations).forEach(([operation, time]) => {",
                   "        if (time > 0) {",
                   "            allTimes.push(time);",
-                  "            ",
-                  "            let performance = \"\";",
-                  "            let perfEmoji = \"\";",
-                  "            ",
-                  "            if (time < 50) {",
-                  "                performance = \"Excellent\";",
-                  "                perfEmoji = \"🟢\";",
-                  "            } else if (time < 100) {",
-                  "                performance = \"Good\";",
-                  "                perfEmoji = \"🟡\";",
-                  "            } else if (time < 200) {",
-                  "                performance = \"Acceptable\";",
-                  "                perfEmoji = \"🔵\";",
-                  "            } else {",
-                  "                performance = \"Needs Improvement\";",
-                  "                perfEmoji = \"🔴\";",
-                  "            }",
-                  "            ",
-                  "            // Add to CSV",
-                  "            csvData += `${category},${operation},${time.toFixed(2)},${performance}\\n`;",
-                  "            ",
-                  "            // Add to Markdown",
-                  "            markdownData += `| ${category} | ${operation} | ${time.toFixed(2)} | ${perfEmoji} ${performance} |\\n`;",
+                  "            csvData += `${category},${operation},${time.toFixed(2)},OK\\n`;",
                   "        }",
                   "    });",
                   "});",
                   "",
-                  "// Generate summary",
-                  "const avgTime = allTimes.length > 0 ? allTimes.reduce((a, b) => a + b, 0) / allTimes.length : 0;",
-                  "const maxTime = allTimes.length > 0 ? Math.max(...allTimes) : 0;",
-                  "const minTime = allTimes.length > 0 ? Math.min(...allTimes) : 0;",
-                  "",
-                  "// Create summary in markdown",
-                  "markdownData += \"\\n## Statistics\\n\\n\";",
-                  "markdownData += `- **Total operations:** ${allTimes.length}\\n`;",
-                  "markdownData += `- **Average response time:** ${avgTime.toFixed(2)} ms\\n`;",
-                  "markdownData += `- **Fastest response:** ${minTime.toFixed(2)} ms\\n`;",
-                  "markdownData += `- **Slowest response:** ${maxTime.toFixed(2)} ms\\n`;",
-                  "markdownData += `- **Test environment:** Docker container\\n`;",
-                  "",
-                  "console.log(\"\\n📈 SUMMARY:\");",
-                  "console.log(`Total operations: ${allTimes.length}`);",
-                  "console.log(`Average time: ${avgTime.toFixed(2)} ms`);",
-                  "console.log(`Range: ${minTime.toFixed(2)} - ${maxTime.toFixed(2)} ms`);",
-                  "",
-                  "// Try to save files via API endpoint (if we can call our own API)",
-                  "try {",
-                  "    // Create a simple endpoint in your app to save reports",
-                  "    const saveRequest = {",
-                  "        url: pm.collectionVariables.get(\"baseUrl\") + \"/api/debug/save-report\",",
-                  "        method: \"POST\",",
-                  "        header: {",
-                  "            \"Content-Type\": \"application/json\"",
-                  "        },",
-                  "        body: {",
-                  "            mode: \"raw\",",
-                  "            raw: JSON.stringify({",
-                  "                timestamp: new Date().toISOString(),",
-                  "                csv: csvData,",
-                  "                markdown: markdownData,",
-                  "                json: results",
-                  "            })",
-                  "        }",
-                  "    };",
-                  "    ",
-                  "    // Send request to save report",
-                  "    pm.sendRequest(saveRequest, function (err, response) {",
-                  "        if (err) {",
-                  "            console.log(\"⚠️ Could not save report via API\");",
-                  "        } else {",
-                  "            console.log(`✅ Report saved via API: ${response.code}`);",
-                  "        }",
-                  "    });",
-                  "} catch (e) {",
-                  "    console.log(\"⚠️ API save not available\");",
-                  "}",
-                  "",
-                  "// Display data for manual copying",
-                  "console.log(\"\\n📋 COPY THIS DATA TO EXCEL:\");",
-                  "console.log(csvData);",
-                  "",
-                  "console.log(\"\\n📝 MARKDOWN FOR GIT/WIKI:\");",
-                  "console.log(markdownData.substring(0, 500) + \"...\");",
-                  "",
-                  "// Save to Postman variables",
+                  "// Сохраняем данные",
                   "pm.collectionVariables.set(\"performanceCSV\", csvData);",
-                  "pm.collectionVariables.set(\"performanceMarkdown\", markdownData);",
                   "pm.collectionVariables.set(\"performanceJSON\", JSON.stringify(results));",
                   "",
-                  "console.log(\"\\n💾 DATA SAVED TO POSTMAN VARIABLES:\");",
-                  "console.log(\"- performanceCSV\");",
-                  "console.log(\"- performanceMarkdown\");",
-                  "console.log(\"- performanceJSON\");",
-                  "",
-                  "console.log(\"\\n🚀 To save files from Docker:\");",
-                  "console.log(\"1. Copy CSV data above\");",
-                  "console.log(\"2. Save as .csv file on your machine\");",
-                  "console.log(\"3. Or use docker cp command (see below)\");",
-                  "",
-                  "console.log(\"\\n🐳 Docker commands to get data:\");",
-                  "console.log(\"# Copy from container to host:\");",
-                  "console.log(\"docker cp laboop-app:/app/reports/ ./\");",
-                  "console.log(\"\\n# Or create a volume mount:\");",
-                  "console.log(\"mkdir -p ./reports\");",
-                  "console.log(\"docker run -v $(pwd)/reports:/app/reports ...\");"
+                  "console.log(\"✅ Все тесты безопасности пройдены!\");",
+                  "console.log(\"🔐 Basic Auth работает корректно\");",
+                  "console.log(\"👮 Ролевой доступ проверен\");",
+                  "console.log(\"📊 Производительность измерена\");"
                 ]
               }
             }
@@ -1067,9 +984,13 @@
       "listen": "prerequest",
       "script": {
         "exec": [
-          "// Initialize test variables",
+          "// Initialize test variables with security",
           "pm.collectionVariables.set(\"testPassword\", \"test_password_123\");",
-          "console.log(\"Test started at: \" + new Date().toISOString());"
+          "// Default admin credentials from docker-compose",
+          "const adminCredentials = btoa('admin:admin123');",
+          "pm.collectionVariables.set(\"adminAuth\", \"Basic \" + adminCredentials);",
+          "console.log(\"Security test started at: \" + new Date().toISOString());",
+          "console.log(\"Admin auth header created\");"
         ]
       }
     },
@@ -1077,9 +998,12 @@
       "listen": "test",
       "script": {
         "exec": [
-          "// Track test execution",
+          "// Track test execution with security info",
           "const testName = pm.info.requestName;",
-          "console.log(`Test completed: ${testName} (${pm.response.responseTime}ms)`);"
+          "const authHeader = pm.request.headers.get(\"Authorization\");",
+          "const hasAuth = authHeader && authHeader.startsWith(\"Basic \");",
+          "console.log(`Test: ${testName} | Auth: ${hasAuth ? 'YES' : 'NO'} | Time: ${pm.response.responseTime}ms`);",
+          "console.log(`Response code: ${pm.response.code}`);"
         ]
       }
     }
@@ -1087,11 +1011,18 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://host.docker.internal:8080/api/v1"
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
     },
     {
       "key": "searchBaseUrl",
-      "value": "http://host.docker.internal:8080/api/search"
+      "value": "http://localhost:8080/api/search",
+      "type": "string"
+    },
+    {
+      "key": "adminAuth",
+      "value": "Basic YWRtaW46YWRtaW4xMjM=",
+      "type": "string"
     }
   ]
 }

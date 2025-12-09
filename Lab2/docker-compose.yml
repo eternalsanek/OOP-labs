@@ -13,34 +13,45 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: 13579
       
-      # JPA
+      # JPA (упрощаем для стабильности)
       SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
       SPRING_JPA_SHOW_SQL: "true"
-      
+      SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+
       # Server
       SERVER_PORT: 8080
-      
-      # Logging
+      SERVER_SERVLET_CONTEXT_PATH: /
+
+      # Spring Security настройки (обязательно)
+      SPRING_SECURITY_USER_NAME: admin
+      SPRING_SECURITY_USER_PASSWORD: admin123
+      SPRING_SECURITY_USER_ROLES: ADMIN
+
+      # Logging (упрощенный вариант)
       LOGGING_LEVEL_ROOT: INFO
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: DEBUG
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: TRACE
-      LOGGING_LEVEL_ORG_HIBERNATE: INFO
-      LOGGING_LEVEL_ORG_HIBERNATE_SQL: DEBUG
-      LOGGING_LEVEL_ORG_HIBERNATE_TYPE_DESCRIPTOR_SQL: TRACE
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: INFO
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: INFO
+      LOGGING_LEVEL_ORG_HIBERNATE: WARN
       LOGGING_LEVEL_RU_SSAU_TK: DEBUG
 
-      # Actuator
-      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info,metrics
+      # Spring Boot Actuator
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info
       MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
 
-      # Для отладки ошибок
+      # Для отладки
       SERVER_ERROR_INCLUDE_STACKTRACE: always
       SERVER_ERROR_INCLUDE_MESSAGE: always
+
+      # Отключаем ненужные фичи для стабильности
+      SPRING_MAIN_LAZY_INITIALIZATION: "false"
+      SPRING_MAIN_BANNER_MODE: "off"
+      SPRING_AUTOCONFIGURE_EXCLUDE: >
+        org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration,
+        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      # ⚠️ МАППИНГ ДИРЕКТОРИИ ЛОГОВ
+      # Маппинг только логов
       - ./logs:/app/logs
-      - ./reports:/app/reports
     restart: unless-stopped
