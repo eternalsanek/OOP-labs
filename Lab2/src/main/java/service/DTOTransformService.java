@@ -9,6 +9,7 @@ import dao.UserDAO;
 import dao.FunctionDAO;
 import dao.PointDAO;
 import lombok.extern.slf4j.Slf4j;
+//import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,35 +43,37 @@ public class DTOTransformService {
         return userDAO.getAllUsers();
     }
 
-    public User createUser(String name, String passwordHash, String role) {
+    public User createUser(String name, String plainPassword, String role) {
         log.debug("Создание пользователя: имя={}, роль={}", name, role);
         validateRole(role);
-        userDAO.createUser(name, passwordHash, role);
 
-        // Получаем созданного пользователя
+        // БЕЗ ХЭШИРОВАНИЯ — пароль как есть
+        userDAO.createUser(name, plainPassword, role);
+
         Optional<User> createdUser = userDAO.getUserByName(name);
         if (createdUser.isPresent()) {
-            log.info("Пользователь успешно создан: {}", createdUser.get());
+            log.info("Пользователь успешно создан: {}", createdUser.get().getName());
             return createdUser.get();
         } else {
-            log.error("Пользователь не найден после создания: {}", name);
             throw new RuntimeException("Ошибка при создании пользователя");
         }
     }
 
-    public User updateUser(UUID id, String newName, String newPasswordHash, String role) {
+    public User updateUser(UUID id, String newName, String newPlainPassword, String role) {
         log.debug("Обновление пользователя: ID={}, новое имя={}", id, newName);
         validateRole(role);
-        userDAO.updateUser(id, newName, newPasswordHash, role);
 
-        Optional<User> updatedUser = userDAO.getUserById(id);
-        if (updatedUser.isPresent()) {
-            log.info("Пользователь успешно обновлен: {}", updatedUser.get());
-            return updatedUser.get();
-        } else {
-            log.error("Пользователь не найден после обновления: {}", id);
-            throw new RuntimeException("Ошибка при обновлении пользователя");
-        }
+        // Если пароль передан — обновляем, иначе оставляем старый
+        Optional<User> current = userDAO.getUserById(id);
+        if (current.isEmpty()) throw new RuntimeException("Пользователь не найден");
+
+        String passwordToSave = (newPlainPassword != null && !newPlainPassword.isEmpty())
+                ? newPlainPassword
+                : current.get().getPasswordHash();
+
+        userDAO.updateUser(id, newName, passwordToSave, role);
+
+        return userDAO.getUserById(id).orElseThrow();
     }
 
     public void deleteUser(UUID id) {
@@ -130,6 +133,20 @@ public class DTOTransformService {
             log.error("Функция не найдена после обновления: {}", id);
             throw new RuntimeException("Ошибка при обновлении функции");
         }
+    }
+
+    public void deletePointsByFunction(UUID funcId) {
+        log.debug("Удаление всех точек функции: ID={}", funcId);
+        if (pointDAO instanceof PointDAOImpl) {
+            ((PointDAOImpl) pointDAO).deletePointsByFunction(funcId);
+        } else {
+            // fallback: по одной
+            List<Point> points = pointDAO.getPointsByFunction(funcId);
+            for (Point p : points) {
+                pointDAO.deletePoint(p.getId());
+            }
+        }
+        log.info("Удалены все точки функции ID={}", funcId);
     }
 
     public void deleteFunction(UUID id) {
