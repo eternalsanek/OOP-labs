@@ -9,7 +9,7 @@ import java.sql.SQLException;
 public class DatabaseConnection {
     private static final String URL = "jdbc:postgresql://localhost:5432/labOOP_db";
     private static final String USER = "postgres";
-    private static final String PASSWORD = "13579";
+    private static final String PASSWORD = "123456";
 
     static {
         try {

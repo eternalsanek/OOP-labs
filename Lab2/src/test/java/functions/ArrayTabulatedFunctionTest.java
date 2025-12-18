@@ -372,7 +372,9 @@ public class ArrayTabulatedFunctionTest {
         // floorIndex должен быть в диапазоне [0, count-2] для интерполяции
         // Эти случаи будут обрабатываться в вызывающем коде, не в самом interpolate
         // Поэтому здесь нет исключений, но важно протестировать граничные значения
-        assertEquals(7.0, arr.interpolate(3.0, 1)); // экстраполяция через interpolate
+        assertThrows(InterpolationException.class,
+                () -> arr.interpolate(3.0, 1)); // x за пределами интервала
+
     }
 
     @Test

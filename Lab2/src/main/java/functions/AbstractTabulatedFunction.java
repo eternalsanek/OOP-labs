@@ -57,8 +57,8 @@ public abstract class AbstractTabulatedFunction implements TabulatedFunction, Se
     public static void checkSorted(double[] xValues) {
         for (int i = 0; i < xValues.length - 1; ++i) {
             if (xValues[i] >= xValues[i + 1]) {
-                log.error("Массив X не отсортирован: x[{}] = {} <= x[{}] = {}", i-1, xValues[i-1], i, xValues[i]);
-                throw new ArrayIsNotSortedException("The array " + "is not sorted in ascending order");
+                log.error("Массив X не отсортирован: x[{}] = {} >= x[{}] = {}", i, xValues[i], i + 1, xValues[i + 1]);
+                throw new ArrayIsNotSortedException("The array is not sorted in ascending order");
             }
         }
     }

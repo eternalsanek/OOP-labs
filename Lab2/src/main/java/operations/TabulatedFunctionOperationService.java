@@ -107,10 +107,6 @@ public class TabulatedFunctionOperationService {
         return doOperation(F, G, new BiOperation() {
             @Override
             public double apply (double u, double v) {
-                if (Math.abs(v) < 1e-12) {
-                    log.error("Деление на ноль: {} / {}", u, v);
-                    throw new ArithmeticException();
-                }
                 return u / v;
             }
         });
