@@ -3,3 +3,6 @@
 /target/
 /logs/
 /out/
+/.idea/
+/.mvn/
+/.iml/
