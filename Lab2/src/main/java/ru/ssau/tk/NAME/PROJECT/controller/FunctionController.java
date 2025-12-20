@@ -1,5 +1,7 @@
 package ru.ssau.tk.NAME.PROJECT.controller;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import ru.ssau.tk.NAME.PROJECT.dto.FunctionDTO;
 import ru.ssau.tk.NAME.PROJECT.service.FunctionService;
 import ru.ssau.tk.NAME.PROJECT.security.OwnerOnly;
@@ -36,6 +38,16 @@ public class FunctionController {
         return functionService.getFunctionById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/my")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<FunctionDTO>> getMyFunctions() {
+        log.info("Getting functions for the current user");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName(); // Получаем имя текущего пользователя
+        List<FunctionDTO> functions = functionService.getFunctionsByOwner(username);
+        return ResponseEntity.ok(functions);
     }
 
     @PostMapping

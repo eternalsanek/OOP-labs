@@ -42,6 +42,18 @@ public class FunctionService {
                 .collect(Collectors.toList());
     }
 
+    public List<FunctionDTO> getFunctionsByOwner(String username) {
+        Optional<User> ownerOpt = userRepository.findByName(username);
+        if (!ownerOpt.isPresent()) {
+            return List.of(); // Или выбросить исключение
+        }
+        User owner = ownerOpt.get();
+        List<Function> functions = functionRepository.findByOwner(owner);
+        return functions.stream()
+                .map(functionMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public FunctionDTO createFunction(FunctionDTO functionDTO) {
         if (functionDTO.getName() == null || functionDTO.getName().isEmpty()) {
