@@ -20,6 +20,8 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.HashSet; // Импортируем HashSet
+import java.util.Set;    // Импортируем Set
 
 @Slf4j
 @Configuration
@@ -182,7 +184,7 @@ public class DataInitializer {
 
         // Генерация точек
         List<Point> points = generatePoints(functions, MIN_POINTS_PER_FUNCTION, MAX_POINTS_PER_FUNCTION);
-        pointRepository.saveAll(points);
+        pointRepository.saveAll(points); // Это место, где возникает ошибка
         log.info("Сохранено {} точек", points.size());
 
         // Вывод статистики
@@ -284,14 +286,29 @@ public class DataInitializer {
         return points;
     }
 
+    // --- ИСПРАВЛЕННЫЕ МЕТОДЫ ГЕНЕРАЦИИ ТОЧЕК ---
     private void generateLinearPoints(Function function, int count, List<Point> points) {
         double slope = random.nextDouble() * 4 - 2;
         double intercept = random.nextDouble() * 10 - 5;
+        Set<BigDecimal> usedXValues = new HashSet<>(); // Создаём Set для отслеживания X
 
         for (int i = 0; i < count; i++) {
-            double x = random.nextDouble() * 20 - 10;
-            double y = slope * x + intercept;
-            points.add(createPoint(function, x, y));
+            BigDecimal xVal;
+            int attempts = 0; // Счётчик попыток, чтобы избежать бесконечного цикла
+            do {
+                double rawX = random.nextDouble() * 20 - 10;
+                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
+                attempts++;
+                if (attempts > 100) { // Если не получается сгенерировать уникальный X за 100 попыток
+                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
+                    return; // Выходим из метода для этой функции
+                }
+            } while (usedXValues.contains(xVal)); // Повторяем, пока X не станет уникальным
+
+            usedXValues.add(xVal); // Добавляем X в Set
+            double y = slope * xVal.doubleValue() + intercept;
+            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
+            points.add(createPointWithValues(function, xVal, yVal)); // Используем новый метод
         }
     }
 
@@ -299,11 +316,25 @@ public class DataInitializer {
         double a = random.nextDouble() * 2 - 1;
         double b = random.nextDouble() * 4 - 2;
         double c = random.nextDouble() * 10 - 5;
+        Set<BigDecimal> usedXValues = new HashSet<>();
 
         for (int i = 0; i < count; i++) {
-            double x = random.nextDouble() * 10 - 5;
-            double y = a * x * x + b * x + c;
-            points.add(createPoint(function, x, y));
+            BigDecimal xVal;
+            int attempts = 0;
+            do {
+                double rawX = random.nextDouble() * 10 - 5;
+                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
+                attempts++;
+                if (attempts > 100) {
+                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
+                    return;
+                }
+            } while (usedXValues.contains(xVal));
+
+            usedXValues.add(xVal);
+            double y = a * xVal.doubleValue() * xVal.doubleValue() + b * xVal.doubleValue() + c;
+            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
+            points.add(createPointWithValues(function, xVal, yVal));
         }
     }
 
@@ -312,32 +343,74 @@ public class DataInitializer {
         double b = random.nextDouble() * 2 - 1;
         double c = random.nextDouble() * 4 - 2;
         double d = random.nextDouble() * 10 - 5;
+        Set<BigDecimal> usedXValues = new HashSet<>();
 
         for (int i = 0; i < count; i++) {
-            double x = random.nextDouble() * 8 - 4;
-            double y = a * x * x * x + b * x * x + c * x + d;
-            points.add(createPoint(function, x, y));
+            BigDecimal xVal;
+            int attempts = 0;
+            do {
+                double rawX = random.nextDouble() * 8 - 4;
+                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
+                attempts++;
+                if (attempts > 100) {
+                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
+                    return;
+                }
+            } while (usedXValues.contains(xVal));
+
+            usedXValues.add(xVal);
+            double y = a * xVal.doubleValue() * xVal.doubleValue() * xVal.doubleValue() + b * xVal.doubleValue() * xVal.doubleValue() + c * xVal.doubleValue() + d;
+            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
+            points.add(createPointWithValues(function, xVal, yVal));
         }
     }
 
     private void generateExponentialPoints(Function function, int count, List<Point> points) {
         double base = random.nextDouble() + 0.5;
         double coefficient = random.nextDouble() * 3;
+        Set<BigDecimal> usedXValues = new HashSet<>();
 
         for (int i = 0; i < count; i++) {
-            double x = random.nextDouble() * 5;
-            double y = coefficient * Math.pow(base, x);
-            points.add(createPoint(function, x, y));
+            BigDecimal xVal;
+            int attempts = 0;
+            do {
+                double rawX = random.nextDouble() * 5;
+                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
+                attempts++;
+                if (attempts > 100) {
+                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
+                    return;
+                }
+            } while (usedXValues.contains(xVal));
+
+            usedXValues.add(xVal);
+            double y = coefficient * Math.pow(base, xVal.doubleValue());
+            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
+            points.add(createPointWithValues(function, xVal, yVal));
         }
     }
 
     private void generateLogarithmicPoints(Function function, int count, List<Point> points) {
         double coefficient = random.nextDouble() * 2 + 0.5;
+        Set<BigDecimal> usedXValues = new HashSet<>();
 
         for (int i = 0; i < count; i++) {
-            double x = random.nextDouble() * 9 + 1;
-            double y = coefficient * Math.log(x);
-            points.add(createPoint(function, x, y));
+            BigDecimal xVal;
+            int attempts = 0;
+            do {
+                double rawX = random.nextDouble() * 9 + 1;
+                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
+                attempts++;
+                if (attempts > 100) {
+                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
+                    return;
+                }
+            } while (usedXValues.contains(xVal));
+
+            usedXValues.add(xVal);
+            double y = coefficient * Math.log(xVal.doubleValue());
+            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
+            points.add(createPointWithValues(function, xVal, yVal));
         }
     }
 
@@ -346,36 +419,76 @@ public class DataInitializer {
         double amplitude = random.nextDouble() * 3 + 0.5;
         double frequency = random.nextDouble() * 2 + 0.5;
         double phase = random.nextDouble() * Math.PI * 2;
+        Set<BigDecimal> usedXValues = new HashSet<>();
 
         for (int i = 0; i < count; i++) {
-            double x = random.nextDouble() * 4 * Math.PI;
+            BigDecimal xVal;
+            int attempts = 0;
+            do {
+                double rawX = random.nextDouble() * 4 * Math.PI;
+                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
+                attempts++;
+                if (attempts > 100) {
+                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
+                    return;
+                }
+            } while (usedXValues.contains(xVal));
+
+            usedXValues.add(xVal);
+            double xDouble = xVal.doubleValue();
 
             double y;
             if (expression.contains("sin")) {
-                y = amplitude * Math.sin(frequency * x + phase);
+                y = amplitude * Math.sin(frequency * xDouble + phase);
             } else if (expression.contains("cos")) {
-                y = amplitude * Math.cos(frequency * x + phase);
+                y = amplitude * Math.cos(frequency * xDouble + phase);
             } else if (expression.contains("tan")) {
-                y = amplitude * Math.tan(frequency * x + phase);
+                y = amplitude * Math.tan(frequency * xDouble + phase);
                 if (Math.abs(y) > 100) {
                     y = 100 * Math.signum(y);
                 }
             } else {
-                y = amplitude * Math.sin(frequency * x + phase);
+                y = amplitude * Math.sin(frequency * xDouble + phase);
             }
 
-            points.add(createPoint(function, x, y));
+            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
+            points.add(createPointWithValues(function, xVal, yVal));
         }
     }
 
     private void generateRandomPoints(Function function, int count, List<Point> points) {
+        Set<BigDecimal> usedXValues = new HashSet<>(); // Используем Set для случайных точек тоже
+
         for (int i = 0; i < count; i++) {
-            double x = random.nextDouble() * 20 - 10;
+            BigDecimal xVal;
+            int attempts = 0;
+            do {
+                double rawX = random.nextDouble() * 20 - 10;
+                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
+                attempts++;
+                if (attempts > 100) {
+                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
+                    return;
+                }
+            } while (usedXValues.contains(xVal));
+
+            usedXValues.add(xVal);
             double y = random.nextDouble() * 20 - 10;
-            points.add(createPoint(function, x, y));
+            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
+            points.add(createPointWithValues(function, xVal, yVal));
         }
     }
 
+    // Новый метод, который принимает BigDecimal значения
+    private Point createPointWithValues(Function function, BigDecimal xVal, BigDecimal yVal) {
+        Point point = new Point();
+        point.setFunction(function);
+        point.setXVal(xVal);
+        point.setYVal(yVal);
+        return point;
+    }
+
+    // Старый метод, можно удалить, если не используется где-то ещё
     private Point createPoint(Function function, double x, double y) {
         BigDecimal xVal = BigDecimal.valueOf(x).setScale(4, RoundingMode.HALF_UP);
         BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
