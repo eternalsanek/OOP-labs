@@ -9,9 +9,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // Применяется ко всем эндпоинтам API
-                .allowedOrigins("http://localhost:3000") // Разрешаем запросы с порта 3000 (React dev server)
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Разрешаем стандартные методы
-                .allowCredentials(true); // Разрешаем отправку credentials (например, JWT токена в заголовке Authorization)
+        registry.addMapping("/**") // Применяется ко всем эндпоинтам
+                .allowedOrigins("http://localhost:3000") // Разрешаем origin фронтенда
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Убедитесь, что OPTIONS разрешён
+                .allowedHeaders("*") // Разрешаем все заголовки
+                .allowCredentials(true); // Разрешаем отправку куки/авторизационных заголовков
     }
 }

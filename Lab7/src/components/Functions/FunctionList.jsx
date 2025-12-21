@@ -23,6 +23,22 @@ const FunctionList = () => {
     fetchFunctions();
   }, []);
 
+const handleDeleteFunction = async (id) => {
+    if (!window.confirm('Вы уверены, что хотите удалить эту функцию?')) {
+      return; // Прерываем выполнение, если пользователь отменил
+    }
+
+    try {
+      await api.delete(`/api/v1/functions/${id}`); // Отправляем DELETE-запрос
+      // Обновляем список функций в состоянии, убрав удалённую
+      setFunctions(prevFunctions => prevFunctions.filter(func => func.id !== id));
+      alert('Функция успешно удалена!');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Ошибка при удалении функции');
+      console.error('Error deleting function:', err);
+    }
+  };
+
   if (loading) return <div>Загрузка функций...</div>;
   if (error) return <div className="alert alert-danger">Ошибка: {error}</div>;
 
@@ -42,7 +58,7 @@ const FunctionList = () => {
               <div>
                 <Link to={`/functions/${func.id}/plot`} className="btn btn-sm btn-info me-2">График</Link>
                 <Link to={`/functions/${func.id}/edit`} className="btn btn-sm btn-warning me-2">Редактировать</Link>
-                {/* Кнопка удаления может быть добавлена */}
+                {/* Кнопка удаления */}<button className="btn btn-sm btn-danger me-2" onClick={() => handleDeleteFunction(func.id)}>Удалить</button>
               </div>
             </li>
           ))}

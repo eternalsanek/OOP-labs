@@ -7,7 +7,9 @@ import FunctionList from './components/Functions/FunctionList';
 import FunctionForm from './components/Functions/FunctionForm';
 import FunctionEditor from './components/Functions/FunctionEditor';
 import FunctionPlot from './components/Functions/FunctionPlot';
+import Home from './components/Home/Home';
 import { AuthProvider } from './utils/auth'; // Предполагаем контекст авторизации
+import './App.css';
 
 function App() {
   return (
@@ -15,15 +17,22 @@ function App() {
       <Router>
         <div className="App">
           <Navbar />
-          <main className="container mt-4">
+          <main>
             <Routes>
+              {/* Главная страница */}
+              <Route path="/" element={<Home />} />
+              {/* Страница входа */}
               <Route path="/login" element={<Login />} />
+              {/* Страница регистрации */}
               <Route path="/register" element={<Register />} />
-              <Route path="/" element={<FunctionList />} /> {/* Путь по умолчанию */}
+              {/* Страница списка функций (теперь по /functions) */}
               <Route path="/functions" element={<FunctionList />} />
+              {/* Страница создания функции */}
               <Route path="/functions/new" element={<FunctionForm />} />
+              {/* Страница редактирования функции */}
               <Route path="/functions/:id/edit" element={<FunctionEditor />} />
-              <Route path="/functions/:id/plot" element={<FunctionPlot />} />
+              {/* Страница просмотра графика функции */}
+              <Route path="/functions/:id" element={<FunctionPlot />} />
             </Routes>
           </main>
         </div>
