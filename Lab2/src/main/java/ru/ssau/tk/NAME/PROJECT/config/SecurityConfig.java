@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.Customizer; // Добавлен импорт для Customizer
 
 @Slf4j
 @Configuration
@@ -33,9 +34,11 @@ public class SecurityConfig {
         log.info("Configuring security filter chain");
 
         http
+                .cors(AbstractHttpConfigurer::disable) // Отключаем встроенную поддержку CORS в Spring Security, если настроено в WebMvcConfigurer
                 .csrf(AbstractHttpConfigurer::disable)
+                // Изменяем политику сессий для совместимости с Basic Auth
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Используем сессии, если нужно (по умолчанию для Basic Auth)
                 )
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
@@ -75,7 +78,8 @@ public class SecurityConfig {
                         // Deny all other requests
                         .anyRequest().denyAll()
                 )
-                .httpBasic(httpBasic -> {});
+                // Настройка Basic Authentication
+                .httpBasic(Customizer.withDefaults()); // Используем стандартные настройки Basic Auth
 
         log.info("Security configuration applied successfully");
         return http.build();
