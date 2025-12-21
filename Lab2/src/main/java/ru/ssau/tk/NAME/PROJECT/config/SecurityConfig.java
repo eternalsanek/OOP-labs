@@ -74,6 +74,9 @@ public class SecurityConfig {
 
                         // Points (authenticated users)
                         .requestMatchers(HttpMethod.GET, "/api/v1/points/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/functions/*/points").hasAnyRole("USER", "ADMIN", "MODERATOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/functions/*/points/**").hasAnyRole("USER", "ADMIN", "MODERATOR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/functions/*/points/**").hasAnyRole("USER", "ADMIN", "MODERATOR")
                         .requestMatchers(HttpMethod.POST, "/api/v1/points").hasAnyRole("USER", "ADMIN", "MODERATOR")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/points/**").hasAnyRole("USER", "ADMIN", "MODERATOR")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/points/**").hasAnyRole("USER", "ADMIN", "MODERATOR")
