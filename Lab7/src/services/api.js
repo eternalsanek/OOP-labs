@@ -7,15 +7,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-});
-
-// Перехватчик для добавления токена к каждому запросу
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+  withCredentials: true
 });
 
 // Перехватчик для обработки ошибок
@@ -23,12 +15,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Если получили 401, возможно, токен истек, очищаем данные
-      localStorage.removeItem('token');
-      localStorage.removeItem('username');
-      window.location.href = '/login'; // Перенаправляем на страницу входа
+      // Если получили 401, очищаем данные аутентификации (если хранятся)
+      // localStorage.removeItem('token'); // УБРАНО
+      localStorage.removeItem('username'); // Оставим, если имя пользователя хранится отдельно
+      // Перенаправляем на страницу входа
+      window.location.href = '/login';
     }
-    // Можно здесь показать глобальный алерт
+    // Показываем глобальный алерт
     alert(error.response?.data?.message || 'Произошла ошибка');
     return Promise.reject(error);
   }
