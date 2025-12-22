@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom'; // Добавлен Link
 import api from '../../services/api';
 import {
   LineChart,
@@ -13,24 +13,23 @@ import {
 } from 'recharts';
 
 const FunctionPlot = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // Получаем ID функции из URL
   const [data, setData] = useState([]);
+  const [functionData, setFunctionData] = useState(null); // Добавлено состояние для данных функции
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchFunctionPoints = async () => {
       try {
-        const response = await api.get(`/api/v1/functions/${id}`); // Получаем полную информацию о функции
-        // Предполагаем, что backend возвращает точки в формате, подходящем для Recharts
-        // Например, response.data.points = [{x: val, y: val}, ...]
-        // Recharts ожидает {name: x_val, value: y_val} или просто {x: x_val, y: y_val}
-        // Адаптируем, если нужно:
+        const response = await api.get(`/api/v1/functions/${id}`);
+        setFunctionData(response.data); // Сохраняем данные функции
+
         const chartData = (response.data.points || []).map(point => ({
-                  name: Number(point.xVal), // Используем xVal, преобразуем в число
-                  x: Number(point.xVal),    // Используем xVal, преобразуем в число
-                  y: Number(point.yVal)     // Используем yVal, преобразуем в число
-                }));
+          name: Number(point.xVal),
+          x: Number(point.xVal),
+          y: Number(point.yVal)
+        }));
         setData(chartData);
       } catch (err) {
         setError(err.response?.data?.message || 'Ошибка при загрузке данных для графика');
@@ -48,7 +47,22 @@ const FunctionPlot = () => {
 
   return (
     <div>
-      <h2>График Функции</h2>
+      {/* Заголовок с именем функции */}
+      <h2>График Функции: {functionData?.name || 'Загрузка...'}</h2>
+
+      {/* Кнопки навигации */}
+      <div className="mb-3"> {/* Добавлен контейнер для кнопок */}
+        {/* Кнопка Редактировать функцию */}
+        <Link to={`/functions/${id}/edit`} className="btn btn-warning me-2"> {/* Используем id функции */}
+          Редактировать функцию
+        </Link>
+        {/* Кнопка Назад к списку */}
+        <Link to="/functions" className="btn btn-secondary"> {/* Путь к списку функций */}
+          Назад к списку
+        </Link>
+      </div>
+
+      {/* Компонент графика */}
       <ResponsiveContainer width="100%" height={400}>
         <LineChart
           data={data}

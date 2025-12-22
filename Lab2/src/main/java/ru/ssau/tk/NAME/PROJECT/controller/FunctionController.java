@@ -121,6 +121,23 @@ public class FunctionController {
         }
     }
 
+    @DeleteMapping("/{functionId}/points/{pointId}")
+    public ResponseEntity<?> deletePointFromFunction(@PathVariable UUID functionId, @PathVariable UUID pointId) {
+        log.info("Deleting point with ID: {} from function with ID: {}", pointId, functionId);
+
+        try {
+            boolean deleted = functionService.deletePointFromFunction(functionId, pointId);
+            if (deleted) {
+                return ResponseEntity.noContent().build(); // 204 No Content
+            } else {
+                return ResponseEntity.notFound().build(); // 404 Not Found, если точка или функция не найдены
+            }
+        } catch (Exception e) {
+            log.error("Error deleting point: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // 500 Internal Server Error
+        }
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
     @FunctionOwnerOnly

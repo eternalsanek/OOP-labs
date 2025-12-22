@@ -167,7 +167,7 @@ const FunctionEditor = () => {
       </div>
 
       <Link to={`/functions/${id}/plot`} className="btn btn-info me-2">Посмотреть График</Link>
-      <Link to="/" className="btn btn-secondary">Назад к списку</Link>
+      <Link to="/functions" className="btn btn-secondary">Назад к списку</Link>
     </div>
   );
 };

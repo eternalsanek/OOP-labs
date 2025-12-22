@@ -123,6 +123,32 @@ public class FunctionService {
     }
 
     @Transactional
+    public boolean deletePointFromFunction(UUID functionId, UUID pointId) {
+        // Найдём функцию
+        Function function = functionRepository.findById(functionId)
+                .orElseThrow(() -> new IllegalArgumentException("Function not found with ID: " + functionId));
+
+        // Найдём точку
+        Point point = pointRepository.findById(pointId)
+                .orElseThrow(() -> new IllegalArgumentException("Point not found with ID: " + pointId));
+
+        // Проверим, принадлежит ли точка этой функции
+        if (!point.getFunction().getId().equals(functionId)) {
+            throw new IllegalArgumentException("Point does not belong to the specified function");
+        }
+
+        // Удалим точку (каскадное удаление может сработать, если настроено в Entity)
+        pointRepository.deleteById(pointId);
+
+        // Опционально: удалим точку из коллекции функции и сохраним функцию (не всегда нужно при каскаде)
+        // function.removePoint(point); // Если используете метод removePoint
+        // functionRepository.save(function);
+
+        return true; // Успешно удалено
+    }
+
+
+    @Transactional
     public boolean deleteFunction(UUID id) {
         if (functionRepository.existsById(id)) {
             functionRepository.deleteById(id);
