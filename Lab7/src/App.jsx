@@ -32,7 +32,7 @@ function App() {
               {/* Страница редактирования функции */}
               <Route path="/functions/:id/edit" element={<FunctionEditor />} />
               {/* Страница просмотра графика функции */}
-              <Route path="/functions/:id" element={<FunctionPlot />} />
+              <Route path="/functions/:id/plot" element={<FunctionPlot />} />
             </Routes>
           </main>
         </div>

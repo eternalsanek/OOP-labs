@@ -27,10 +27,10 @@ const FunctionPlot = () => {
         // Recharts ожидает {name: x_val, value: y_val} или просто {x: x_val, y: y_val}
         // Адаптируем, если нужно:
         const chartData = (response.data.points || []).map(point => ({
-          name: point.x, // Для подписи на оси X
-          x: point.x,
-          y: point.y
-        }));
+                  name: Number(point.xVal), // Используем xVal, преобразуем в число
+                  x: Number(point.xVal),    // Используем xVal, преобразуем в число
+                  y: Number(point.yVal)     // Используем yVal, преобразуем в число
+                }));
         setData(chartData);
       } catch (err) {
         setError(err.response?.data?.message || 'Ошибка при загрузке данных для графика');
