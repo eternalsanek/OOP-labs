@@ -1,10 +1,14 @@
 package ru.ssau.tk.NAME.PROJECT.service;
 
 import ru.ssau.tk.NAME.PROJECT.dto.FunctionDTO;
+import ru.ssau.tk.NAME.PROJECT.dto.PointDTO;
 import ru.ssau.tk.NAME.PROJECT.entity.Function;
+import ru.ssau.tk.NAME.PROJECT.entity.Point;
 import ru.ssau.tk.NAME.PROJECT.entity.User;
 import ru.ssau.tk.NAME.PROJECT.mapper.FunctionMapper;
+import ru.ssau.tk.NAME.PROJECT.mapper.PointMapper;
 import ru.ssau.tk.NAME.PROJECT.repository.FunctionRepository;
+import ru.ssau.tk.NAME.PROJECT.repository.PointRepository;
 import ru.ssau.tk.NAME.PROJECT.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +26,8 @@ public class FunctionService {
     private final FunctionRepository functionRepository;
     private final UserRepository userRepository;
     private final FunctionMapper functionMapper;
+    private final PointRepository pointRepository;
+    private final PointMapper pointMapper;
 
     public List<FunctionDTO> getAllFunctions() {
         return functionRepository.findAll().stream()
@@ -89,18 +95,31 @@ public class FunctionService {
                     if (functionDTO.getExpression() != null) {
                         existingFunction.setExpression(functionDTO.getExpression());
                     }
-
-                    // Если нужно обновить owner
-                    if (functionDTO.getOwnerId() != null) {
-                        User newOwner = userRepository.findById(functionDTO.getOwnerId())
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                        "User not found with ID: " + functionDTO.getOwnerId()));
-                        existingFunction.setOwner(newOwner);
-                    }
-
                     return functionRepository.save(existingFunction);
                 })
                 .map(functionMapper::toDTO);
+    }
+
+    @Transactional
+    public PointDTO addPointToFunction(UUID functionId, PointDTO pointDTO) {
+        if (pointDTO == null) {
+            throw new IllegalArgumentException("Point data is required");
+        }
+
+        Function function = functionRepository.findById(functionId)
+                .orElseThrow(() -> new IllegalArgumentException("Function not found with ID: " + functionId));
+
+        // --- ИСПРАВЛЕНО ---
+        // Создаём новую точку из DTO, передавая связь с функцией
+        Point point = pointMapper.toEntity(pointDTO, function); // Вызываем через поле pointMapper
+        // point.setFunction(function); // Уже установлено в toEntity, если там реализовано
+        // ---
+        // Сохраняем точку
+        point = pointRepository.save(point); // Вызываем через поле pointRepository
+        // ---
+        // Возвращаем DTO созданной точки
+        return pointMapper.toDTO(point); // Вызываем через поле pointMapper
+        // --- /ИСПРАВЛЕНО ---
     }
 
     @Transactional

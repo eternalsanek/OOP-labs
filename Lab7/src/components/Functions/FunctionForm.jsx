@@ -20,7 +20,7 @@ const FunctionForm = () => {
       points = pairs.map(pair => {
         const [x, y] = pair.split(',').map(Number);
         if (isNaN(x) || isNaN(y)) throw new Error(`Неверный формат точки: ${pair}`);
-        return { x, y };
+        return { xVal: x.toString(), yVal: y.toString() };
       });
     } catch (parseError) {
       setError(parseError.message);
@@ -38,7 +38,7 @@ const FunctionForm = () => {
     try {
       await api.post('/api/v1/functions', functionData);
       alert('Функция успешно создана!');
-      navigate('/'); // Перенаправить на список функций
+      navigate('/functions'); // Перенаправить на список функций
     } catch (err) {
       setError(err.response?.data?.message || 'Ошибка при создании функции');
       console.error('Error creating function:', err);

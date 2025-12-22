@@ -32,7 +32,7 @@ const FunctionEditor = () => {
       return;
     }
     try {
-      await api.patch(`/api/v1/functions/${id}`, { name }); // Предполагаем PATCH для обновления имени
+      await api.put(`/api/v1/functions/${id}`, { name, type: functionData.type });
       setFunctionData(prev => ({ ...prev, name }));
       alert('Имя функции обновлено!');
     } catch (err) {
@@ -50,16 +50,15 @@ const FunctionEditor = () => {
     }
 
     try {
-       // Предполагаем, что эндпоинт для добавления точки к функции существует
-      await api.post(`/api/v1/functions/${id}/points`, { x, y });
-      // Обновляем локально, или перезагружаем данные
+      const response = await api.post(`/api/v1/functions/${id}/points`, { xVal: x, yVal: y });
+      const newPoint = response.data;
+
       setFunctionData(prev => {
         if (prev) {
-           // Добавляем точку в список, предполагая, что структура такая
-           // Это зависит от того, как backend возвращает и обрабатывает точки
-           // Здесь просто пример, может потребоваться адаптация
-           const updatedPoints = [...(prev.points || []), { x, y }];
-           return { ...prev, points: updatedPoints };
+           return {
+                     ...prev,
+                     points: [...(prev.points || []), newPoint]
+                   };
         }
         return prev;
       });
@@ -72,16 +71,16 @@ const FunctionEditor = () => {
     }
   };
 
-  const handleDeletePoint = async (pointIndex) => {
-    // Удаление точки по индексу - зависит от API бэкенда
-    // Предположим, что есть эндпоинт DELETE /api/v1/functions/{id}/points/{index}
+  const handleDeletePoint = async (pointId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить эту точку?')) {
+      return;
+    }
+
     try {
-      await api.delete(`/api/v1/functions/${id}/points/${pointIndex}`);
-      // Обновляем локально
+      await api.delete(`/api/v1/functions/${id}/points/${pointId}`);
       setFunctionData(prev => {
         if (prev && prev.points) {
-          const updatedPoints = [...prev.points];
-          updatedPoints.splice(pointIndex, 1);
+          const updatedPoints = prev.points.filter(point => point.id !== pointId);
           return { ...prev, points: updatedPoints };
         }
         return prev;
@@ -114,6 +113,7 @@ const FunctionEditor = () => {
       </div>
 
       <h3>Точки функции</h3>
+      {/* Условие проверяет points и их длину */}
       {functionData.points && functionData.points.length > 0 ? (
         <table className="table table-striped">
           <thead>
@@ -124,14 +124,15 @@ const FunctionEditor = () => {
             </tr>
           </thead>
           <tbody>
-            {functionData.points.map((point, index) => (
-              <tr key={index}>
-                <td>{point.x}</td>
-                <td>{point.y}</td>
+            {/* map вызывается внутри tbody, без повторной проверки */}
+            {functionData.points.map((point) => (
+              <tr key={point.id}> {/* Используем point.id как key */}
+                <td>{point.xVal}</td> {/* Исправлено: xVal вместо x */}
+                <td>{point.yVal}</td> {/* Исправлено: yVal вместо y */}
                 <td>
                   <button
                     className="btn btn-sm btn-danger"
-                    onClick={() => handleDeletePoint(index)}
+                    onClick={() => handleDeletePoint(point.id)} // Исправлено: передаём point.id
                   >
                     Удалить
                   </button>

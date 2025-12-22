@@ -30,7 +30,7 @@ public class SecurityAspect {
     private final FunctionRepository functionRepository;
     private final PointRepository pointRepository;
 
-    @Before("@annotation(ru.ssau.tk.NAME.PROJECT.security.OwnerOnly) && args(id, ..)")
+    @Before("@annotation(ru.ssau.tk.NAME.PROJECT.security.FunctionOwnerOnly) && args(id, ..)")
     public void checkOwnerForFunction(UUID id) {
         log.debug("Checking ownership for function with ID: {}", id);
 
@@ -60,7 +60,7 @@ public class SecurityAspect {
         log.debug("Access granted for function: {}", id);
     }
 
-    @Before("@annotation(ru.ssau.tk.NAME.PROJECT.security.OwnerOnly) && args(pointId, ..)")
+    @Before("@annotation(ru.ssau.tk.NAME.PROJECT.security.PointOwnerOnly) && args(pointId, ..)")
     public void checkOwnerForPoint(UUID pointId) {
         log.debug("Checking ownership for point with ID: {}", pointId);
 

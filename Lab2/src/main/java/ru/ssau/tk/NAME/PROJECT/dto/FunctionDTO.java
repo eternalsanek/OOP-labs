@@ -2,6 +2,7 @@ package ru.ssau.tk.NAME.PROJECT.dto;
 
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -14,4 +15,5 @@ public class FunctionDTO {
     private String type;
     private String expression;
     private UUID ownerId;
+    private List<PointDTO> points;
 }

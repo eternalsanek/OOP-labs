@@ -3,6 +3,8 @@ package ru.ssau.tk.NAME.PROJECT.controller;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import ru.ssau.tk.NAME.PROJECT.dto.FunctionDTO;
+import ru.ssau.tk.NAME.PROJECT.dto.PointDTO;
+import ru.ssau.tk.NAME.PROJECT.security.FunctionOwnerOnly;
 import ru.ssau.tk.NAME.PROJECT.service.FunctionService;
 import ru.ssau.tk.NAME.PROJECT.security.OwnerOnly;
 import lombok.RequiredArgsConstructor;
@@ -95,7 +97,7 @@ public class FunctionController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
-    @OwnerOnly
+    @FunctionOwnerOnly
     public ResponseEntity<FunctionDTO> updateFunction(@PathVariable UUID id, @RequestBody FunctionDTO functionDTO) {
         log.info("Updating function with id: {}", id);
         return functionService.updateFunction(id, functionDTO)
@@ -103,9 +105,25 @@ public class FunctionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/{id}/points")
+    public ResponseEntity<PointDTO> addPointToFunction(@PathVariable UUID id, @RequestBody PointDTO pointDTO) {
+        log.info("Adding point to function with ID: {}", id);
+
+        try {
+            PointDTO createdPoint = functionService.addPointToFunction(id, pointDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdPoint);
+        } catch (IllegalArgumentException e) {
+            log.error("Validation error: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(null); // Или вернуть Map с сообщением
+        } catch (Exception e) {
+            log.error("Error adding point to function: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'MODERATOR')")
-    @OwnerOnly
+    @FunctionOwnerOnly
     public ResponseEntity<Void> deleteFunction(@PathVariable UUID id) {
         log.info("Deleting function with id: {}", id);
         if (functionService.deleteFunction(id)) {
