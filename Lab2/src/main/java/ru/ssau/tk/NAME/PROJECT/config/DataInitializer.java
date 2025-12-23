@@ -34,7 +34,9 @@ public class DataInitializer {
     private final PointRepository pointRepository;
 
     private static final String[] USER_NAMES = {"Adam", "Barbara", "Charlie", "Diana", "Edward", "Fiona", "George", "Hannah", "Ivan", "Julia", "Kevin", "Laura", "Michael", "Nina", "Oliver", "Paula"};
-    private static final String[] FUNCTION_TYPES = {"linear", "quadratic", "cubic", "exponential", "logarithmic", "trigonometric"};
+    // Изменяем типы функций на ArrayTabulatedFunction и LinkedListTabulatedFunction
+    private static final String[] FUNCTION_TYPES = {"ArrayTabulatedFunction", "LinkedListTabulatedFunction"};
+    // Выражения можно оставить как есть или изменить, они не используются для генерации точек в новой логике
     private static final String[] EXPRESSIONS = {"x + 1", "x^2", "x^3", "e^x", "log(x)", "sin(x)", "cos(x)", "tan(x)"};
 
     private final Random random = new Random();
@@ -42,6 +44,7 @@ public class DataInitializer {
     // Конфигурация генерации данных
     private static final int USER_COUNT = 50;
     private static final int FUNCTIONS_PER_USER = 2;
+    // Настройки количества точек
     private static final int MIN_POINTS_PER_FUNCTION = 10;
     private static final int MAX_POINTS_PER_FUNCTION = 30;
     private static final boolean CLEAR_DATABASE = true;
@@ -83,7 +86,7 @@ public class DataInitializer {
             // Создание дефолтных пользователей с Spring Security
             createSecurityUsers();
 
-            // Генерация тестовых данных
+            // Генерация тестовых данных (функций и точек)
             generateTestData();
 
             log.info("=== ИНИЦИАЛИЗАЦИЯ БАЗЫ ДАННЫХ ЗАВЕРШЕНА ===");
@@ -184,7 +187,7 @@ public class DataInitializer {
 
         // Генерация точек
         List<Point> points = generatePoints(functions, MIN_POINTS_PER_FUNCTION, MAX_POINTS_PER_FUNCTION);
-        pointRepository.saveAll(points); // Это место, где возникает ошибка
+        pointRepository.saveAll(points);
         log.info("Сохранено {} точек", points.size());
 
         // Вывод статистики
@@ -238,6 +241,7 @@ public class DataInitializer {
 
         for (User user : users) {
             for (int j = 0; j < functionsPerUser; j++) {
+                // Выбираем тип из обновлённого массива
                 String type = FUNCTION_TYPES[random.nextInt(FUNCTION_TYPES.length)];
                 String expression = EXPRESSIONS[random.nextInt(EXPRESSIONS.length)];
                 String name = "Func_" + type + "_" + String.format("%03d", random.nextInt(1000)) + "_" + user.getName();
@@ -253,233 +257,42 @@ public class DataInitializer {
         return functions;
     }
 
+    // --- НОВАЯ МЕТОДА ГЕНЕРАЦИИ ТОЧЕК ---
+    // Генерирует случайные точки для функций, гарантируя уникальность X для каждой функции
     private List<Point> generatePoints(List<Function> functions, int minPointsPerFunction, int maxPointsPerFunction) {
         List<Point> points = new ArrayList<>();
 
         for (Function function : functions) {
             int pointsCount = minPointsPerFunction + random.nextInt(maxPointsPerFunction - minPointsPerFunction + 1);
+            Set<BigDecimal> usedXValues = new HashSet<>(); // Для отслеживания уникальных X значений для текущей функции
 
-            switch (function.getType().toLowerCase()) {
-                case "linear":
-                    generateLinearPoints(function, pointsCount, points);
-                    break;
-                case "quadratic":
-                    generateQuadraticPoints(function, pointsCount, points);
-                    break;
-                case "cubic":
-                    generateCubicPoints(function, pointsCount, points);
-                    break;
-                case "exponential":
-                    generateExponentialPoints(function, pointsCount, points);
-                    break;
-                case "logarithmic":
-                    generateLogarithmicPoints(function, pointsCount, points);
-                    break;
-                case "trigonometric":
-                    generateTrigonometricPoints(function, pointsCount, points);
-                    break;
-                default:
-                    generateRandomPoints(function, pointsCount, points);
-                    break;
+            for (int i = 0; i < pointsCount; i++) {
+                BigDecimal xVal;
+                int attempts = 0;
+                do {
+                    double rawX = random.nextDouble() * 20 - 10; // Диапазон от -10 до 10
+                    xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
+                    attempts++;
+                    if (attempts > 100) {
+                        log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
+                        break; // Выходим из цикла генерации точек для этой функции
+                    }
+                } while (usedXValues.contains(xVal));
+
+                if (attempts <= 100) { // Если успешно нашли уникальный X
+                    usedXValues.add(xVal);
+                    // Генерируем случайное Y значение
+                    double rawY = random.nextDouble() * 20 - 10; // Диапазон от -10 до 10
+                    BigDecimal yVal = BigDecimal.valueOf(rawY).setScale(4, RoundingMode.HALF_UP);
+
+                    points.add(createPointWithValues(function, xVal, yVal));
+                }
             }
         }
         return points;
     }
 
-    // --- ИСПРАВЛЕННЫЕ МЕТОДЫ ГЕНЕРАЦИИ ТОЧЕК ---
-    private void generateLinearPoints(Function function, int count, List<Point> points) {
-        double slope = random.nextDouble() * 4 - 2;
-        double intercept = random.nextDouble() * 10 - 5;
-        Set<BigDecimal> usedXValues = new HashSet<>(); // Создаём Set для отслеживания X
-
-        for (int i = 0; i < count; i++) {
-            BigDecimal xVal;
-            int attempts = 0; // Счётчик попыток, чтобы избежать бесконечного цикла
-            do {
-                double rawX = random.nextDouble() * 20 - 10;
-                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
-                attempts++;
-                if (attempts > 100) { // Если не получается сгенерировать уникальный X за 100 попыток
-                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
-                    return; // Выходим из метода для этой функции
-                }
-            } while (usedXValues.contains(xVal)); // Повторяем, пока X не станет уникальным
-
-            usedXValues.add(xVal); // Добавляем X в Set
-            double y = slope * xVal.doubleValue() + intercept;
-            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
-            points.add(createPointWithValues(function, xVal, yVal)); // Используем новый метод
-        }
-    }
-
-    private void generateQuadraticPoints(Function function, int count, List<Point> points) {
-        double a = random.nextDouble() * 2 - 1;
-        double b = random.nextDouble() * 4 - 2;
-        double c = random.nextDouble() * 10 - 5;
-        Set<BigDecimal> usedXValues = new HashSet<>();
-
-        for (int i = 0; i < count; i++) {
-            BigDecimal xVal;
-            int attempts = 0;
-            do {
-                double rawX = random.nextDouble() * 10 - 5;
-                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
-                attempts++;
-                if (attempts > 100) {
-                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
-                    return;
-                }
-            } while (usedXValues.contains(xVal));
-
-            usedXValues.add(xVal);
-            double y = a * xVal.doubleValue() * xVal.doubleValue() + b * xVal.doubleValue() + c;
-            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
-            points.add(createPointWithValues(function, xVal, yVal));
-        }
-    }
-
-    private void generateCubicPoints(Function function, int count, List<Point> points) {
-        double a = random.nextDouble() * 0.5 - 0.25;
-        double b = random.nextDouble() * 2 - 1;
-        double c = random.nextDouble() * 4 - 2;
-        double d = random.nextDouble() * 10 - 5;
-        Set<BigDecimal> usedXValues = new HashSet<>();
-
-        for (int i = 0; i < count; i++) {
-            BigDecimal xVal;
-            int attempts = 0;
-            do {
-                double rawX = random.nextDouble() * 8 - 4;
-                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
-                attempts++;
-                if (attempts > 100) {
-                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
-                    return;
-                }
-            } while (usedXValues.contains(xVal));
-
-            usedXValues.add(xVal);
-            double y = a * xVal.doubleValue() * xVal.doubleValue() * xVal.doubleValue() + b * xVal.doubleValue() * xVal.doubleValue() + c * xVal.doubleValue() + d;
-            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
-            points.add(createPointWithValues(function, xVal, yVal));
-        }
-    }
-
-    private void generateExponentialPoints(Function function, int count, List<Point> points) {
-        double base = random.nextDouble() + 0.5;
-        double coefficient = random.nextDouble() * 3;
-        Set<BigDecimal> usedXValues = new HashSet<>();
-
-        for (int i = 0; i < count; i++) {
-            BigDecimal xVal;
-            int attempts = 0;
-            do {
-                double rawX = random.nextDouble() * 5;
-                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
-                attempts++;
-                if (attempts > 100) {
-                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
-                    return;
-                }
-            } while (usedXValues.contains(xVal));
-
-            usedXValues.add(xVal);
-            double y = coefficient * Math.pow(base, xVal.doubleValue());
-            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
-            points.add(createPointWithValues(function, xVal, yVal));
-        }
-    }
-
-    private void generateLogarithmicPoints(Function function, int count, List<Point> points) {
-        double coefficient = random.nextDouble() * 2 + 0.5;
-        Set<BigDecimal> usedXValues = new HashSet<>();
-
-        for (int i = 0; i < count; i++) {
-            BigDecimal xVal;
-            int attempts = 0;
-            do {
-                double rawX = random.nextDouble() * 9 + 1;
-                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
-                attempts++;
-                if (attempts > 100) {
-                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
-                    return;
-                }
-            } while (usedXValues.contains(xVal));
-
-            usedXValues.add(xVal);
-            double y = coefficient * Math.log(xVal.doubleValue());
-            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
-            points.add(createPointWithValues(function, xVal, yVal));
-        }
-    }
-
-    private void generateTrigonometricPoints(Function function, int count, List<Point> points) {
-        String expression = function.getExpression().toLowerCase();
-        double amplitude = random.nextDouble() * 3 + 0.5;
-        double frequency = random.nextDouble() * 2 + 0.5;
-        double phase = random.nextDouble() * Math.PI * 2;
-        Set<BigDecimal> usedXValues = new HashSet<>();
-
-        for (int i = 0; i < count; i++) {
-            BigDecimal xVal;
-            int attempts = 0;
-            do {
-                double rawX = random.nextDouble() * 4 * Math.PI;
-                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
-                attempts++;
-                if (attempts > 100) {
-                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
-                    return;
-                }
-            } while (usedXValues.contains(xVal));
-
-            usedXValues.add(xVal);
-            double xDouble = xVal.doubleValue();
-
-            double y;
-            if (expression.contains("sin")) {
-                y = amplitude * Math.sin(frequency * xDouble + phase);
-            } else if (expression.contains("cos")) {
-                y = amplitude * Math.cos(frequency * xDouble + phase);
-            } else if (expression.contains("tan")) {
-                y = amplitude * Math.tan(frequency * xDouble + phase);
-                if (Math.abs(y) > 100) {
-                    y = 100 * Math.signum(y);
-                }
-            } else {
-                y = amplitude * Math.sin(frequency * xDouble + phase);
-            }
-
-            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
-            points.add(createPointWithValues(function, xVal, yVal));
-        }
-    }
-
-    private void generateRandomPoints(Function function, int count, List<Point> points) {
-        Set<BigDecimal> usedXValues = new HashSet<>(); // Используем Set для случайных точек тоже
-
-        for (int i = 0; i < count; i++) {
-            BigDecimal xVal;
-            int attempts = 0;
-            do {
-                double rawX = random.nextDouble() * 20 - 10;
-                xVal = BigDecimal.valueOf(rawX).setScale(4, RoundingMode.HALF_UP);
-                attempts++;
-                if (attempts > 100) {
-                    log.warn("Не удалось сгенерировать уникальное X-значение для функции {} после 100 попыток. Прекращение генерации точек для этой функции.", function.getId());
-                    return;
-                }
-            } while (usedXValues.contains(xVal));
-
-            usedXValues.add(xVal);
-            double y = random.nextDouble() * 20 - 10;
-            BigDecimal yVal = BigDecimal.valueOf(y).setScale(4, RoundingMode.HALF_UP);
-            points.add(createPointWithValues(function, xVal, yVal));
-        }
-    }
-
-    // Новый метод, который принимает BigDecimal значения
+    // Метод, который принимает BigDecimal значения
     private Point createPointWithValues(Function function, BigDecimal xVal, BigDecimal yVal) {
         Point point = new Point();
         point.setFunction(function);
